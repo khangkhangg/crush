@@ -4,3 +4,4 @@
 .env
 config/config.local.php
 .agents/
+.DS_Store
