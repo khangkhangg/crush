@@ -1,0 +1,6 @@
+.superpowers/
+/storage/*.log
+/vendor/
+.env
+config/config.local.php
+.agents/
