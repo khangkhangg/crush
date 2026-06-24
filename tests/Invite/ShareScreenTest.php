@@ -52,5 +52,6 @@ final class ShareScreenTest extends DatabaseTestCase
         $this->assertStringContainsString('wa.me', $body);                  // a target rendered
         $this->assertStringContainsString($encoded, $body);                 // with the encoded link
         $this->assertStringContainsString('navigator.share', $body);        // native share hook
+        $this->assertStringContainsString('id="copiedMsg"', $body);   // the feedback element exists
     }
 }
