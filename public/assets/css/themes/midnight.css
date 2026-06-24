@@ -1,0 +1,10 @@
+.theme-midnight{
+  --bg:radial-gradient(120% 80% at 70% 10%,#3a1a5e,#160c2e 60%,#0c0720);
+  --surface:rgba(255,255,255,.06);--ink:#ede6ff;--muted:#b8a8e0;
+  --accent:#ff5fa2;--accent-ink:#fff;--chip-bg:rgba(255,255,255,.08);--chip-ink:#ffb3da;
+  --field-border:rgba(255,143,199,.4);--radius:24px;--font:"Segoe UI",system-ui,sans-serif;
+  --shadow:0 0 24px rgba(157,123,255,.4);
+}
+.theme-midnight .card{backdrop-filter:blur(8px);border:1px solid rgba(255,143,199,.25)}
+.theme-midnight .field input{background:rgba(255,255,255,.06);color:var(--ink)}
+.theme-midnight .cta{background:linear-gradient(90deg,#ff5fa2,#9d7bff)}

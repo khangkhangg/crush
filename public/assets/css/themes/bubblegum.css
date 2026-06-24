@@ -1,0 +1,8 @@
+.theme-bubblegum{
+  --bg:linear-gradient(160deg,#ffd9ec,#e7d4ff 55%,#d4f0ff);
+  --surface:#fff;--ink:#7a2e6b;--muted:#9a6a90;
+  --accent:#ff3d8b;--accent-ink:#fff;--chip-bg:#fff0f7;--chip-ink:#ff3d8b;
+  --field-border:#f3d4e8;--radius:24px;--font:"Trebuchet MS","Segoe UI",sans-serif;
+  --shadow:0 1px 2px rgba(255,61,139,.12),0 14px 30px rgba(157,123,255,.22);
+}
+.theme-bubblegum .cta{box-shadow:0 5px 0 #c81e68}

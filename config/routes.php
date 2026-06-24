@@ -6,13 +6,15 @@ use App\Auth\GoogleController;
 use App\Core\Response;
 use App\Core\Router;
 use App\Invite\InviteController;
+use App\Respond\RespondController;
 
 return static function (
     Router $router,
     AuthController $auth,
     GoogleController $google,
     InviteController $invite,
-    callable $currentUserId
+    callable $currentUserId,
+    RespondController $respond
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -39,4 +41,7 @@ return static function (
     $router->add('GET',  '/invites/new',   static fn(): Response => $invite->showNew($currentUserId()));
     $router->add('POST', '/invites',       static fn(): Response => $invite->create($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
     $router->add('GET',  '/i/{token}/created', static fn(string $token): Response => $invite->showCreated($currentUserId(), $token));
+
+    $router->add('GET',  '/i/{token}', static fn(string $token): Response => $respond->open($token));
+    $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit($token, $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 };
