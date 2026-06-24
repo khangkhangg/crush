@@ -8,6 +8,7 @@ use App\Auth\GoogleController;
 use App\Core\Response;
 use App\Core\Router;
 use App\Invite\InviteController;
+use App\Landing\LandingController;
 use App\Profile\ProfileController;
 use App\Respond\RespondController;
 
@@ -21,6 +22,7 @@ return static function (
     BlockController $block,
     AdminController $admin,
     ProfileController $profile,
+    LandingController $landing,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -42,7 +44,10 @@ return static function (
         is_string($_GET['state'] ?? null) ? $_GET['state'] : null
     ));
 
-    $router->add('GET',  '/',              static fn(): Response => $invite->dashboard($currentUserId()));
+    // Front door
+    $router->add('GET',  '/', static fn(): Response => $landing->home($currentUserId()));
+    $router->add('POST', '/', static fn(): Response => $landing->start($_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    // Dashboard moves to /invites only (the old `GET /` -> dashboard line is removed)
     $router->add('GET',  '/invites',       static fn(): Response => $invite->dashboard($currentUserId()));
     $router->add('GET',  '/invites/new',   static fn(): Response => $invite->showNew($currentUserId()));
     $router->add('POST', '/invites',       static fn(): Response => $invite->create($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
