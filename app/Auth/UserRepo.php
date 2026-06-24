@@ -69,6 +69,11 @@ final class UserRepo
         ]);
     }
 
+    public function setPasswordHash(int $id, string $hash): void
+    {
+        $this->pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $id]);
+    }
+
     public static function isProfileComplete(array $user): bool
     {
         return isset($user['profile_completed_at']) && $user['profile_completed_at'] !== '';
