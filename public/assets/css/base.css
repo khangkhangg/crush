@@ -1,0 +1,38 @@
+:root{
+  --bg:#fff; --surface:#fff; --ink:#333; --muted:rgba(0,0,0,.6);
+  --accent:#ff3d8b; --accent-ink:#fff; --chip-bg:#f4f4f6; --chip-ink:#333;
+  --field-border:#e6e6ee; --radius:24px; --font:"Segoe UI",system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 12px 28px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:var(--bg);color:var(--ink);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;}
+.card{background:var(--surface);border-radius:var(--radius);padding:28px;width:min(94vw,420px);
+  box-shadow:var(--shadow);}
+.invite-card>*{opacity:0;transform:translateY(12px);animation:rise .5s cubic-bezier(0.2,0,0,1) forwards;}
+.invite-card>*:nth-child(1){animation-delay:.05s}.invite-card>*:nth-child(2){animation-delay:.15s}
+.invite-card>*:nth-child(3){animation-delay:.25s}.invite-card>*:nth-child(4){animation-delay:.35s}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+.kicker{font-size:22px;font-weight:800;text-wrap:balance;margin:0 0 6px;color:var(--accent)}
+.message{font-size:15px;line-height:1.5;text-wrap:pretty;opacity:.85}
+.respond-form{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
+.field input{padding:12px;border-radius:14px;border:1px solid var(--field-border);font-size:16px;font-family:inherit}
+.meals{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px}
+.meals legend{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.meal-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 12px;border-radius:999px;
+  background:var(--chip-bg);color:var(--chip-ink);cursor:pointer;
+  transition:scale .12s cubic-bezier(0.2,0,0,1),box-shadow .2s;}
+.meal-chip:active{scale:.96}
+.meal-chip input{position:absolute;opacity:0;width:0;height:0}
+.meal-chip:has(input:checked){box-shadow:0 0 0 2px var(--accent) inset}
+.meal-chip .ic{width:16px;height:16px}
+.cta{margin-top:6px;min-height:48px;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);
+  font-weight:700;font-size:16px;cursor:pointer;transition:scale .12s cubic-bezier(0.2,0,0,1),box-shadow .2s;}
+.cta:active{scale:.96}
+.error{color:#b3243b;font-size:14px;margin:0 0 8px}
+.confirm-card{text-align:center}
+.confirm-card .big-ic{width:48px;height:48px;color:var(--accent)}
+.confirm-card h1{font-size:24px;text-wrap:balance}
+.subtitle{color:var(--muted);text-align:center}

@@ -20,6 +20,11 @@ use App\Core\SystemClock;
 use App\Core\View;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
+use App\Invite\ResponseRepo;
+use App\Respond\RespondController;
+use App\Theme\AbEventRepo;
+use App\Theme\ABAssigner;
+use App\Theme\ThemeRepo;
 
 /** @var Config $config */
 $config = require dirname(__DIR__) . '/config/config.php';
@@ -56,8 +61,16 @@ $inviteCtrl = new InviteController(
 );
 $currentUserId = static fn(): ?int => $session->userId();
 
+$responseRepo = new ResponseRepo($pdo, $clock);
+$themeRepo    = new ThemeRepo($pdo);
+$abEvents     = new AbEventRepo($pdo, $clock);
+$assigner     = new ABAssigner($themeRepo, $inviteRepo);
+$respondCtrl  = new RespondController(
+    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock
+);
+
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
