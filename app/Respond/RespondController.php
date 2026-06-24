@@ -11,6 +11,7 @@ use App\Core\View;
 use App\Invite\InviteRepo;
 use App\Invite\InviteState;
 use App\Invite\ResponseRepo;
+use App\Maps\LinkResolver;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
 
@@ -25,6 +26,7 @@ final class RespondController
         private ABAssigner $assigner,
         private AbEventRepo $events,
         private Clock $clock,
+        private LinkResolver $maps,
     ) {}
 
     public function open(string $token): Response
@@ -121,13 +123,19 @@ final class RespondController
         $meal = (string) ($input['meal_choice'] ?? '');
         $meal = MealOptions::isValid($meal) ? $meal : null;
 
+        $pickupRaw = $this->clean($input['pickup_raw'] ?? null);
+        $pickup = $this->maps->resolve((string) ($pickupRaw ?? ''));
+
         $this->responses->store((int) $invite['id'], [
-            'chosen_start'  => $start->format('Y-m-d H:i:s'),
-            'chosen_end'    => $end->format('Y-m-d H:i:s'),
-            'meal_choice'   => $meal,
-            'meal_wish'     => $this->clean($input['meal_wish'] ?? null),
-            'crush_contact' => $this->clean($input['crush_contact'] ?? null),
-            'pickup_raw'    => $this->clean($input['pickup_raw'] ?? null),
+            'chosen_start'     => $start->format('Y-m-d H:i:s'),
+            'chosen_end'       => $end->format('Y-m-d H:i:s'),
+            'meal_choice'      => $meal,
+            'meal_wish'        => $this->clean($input['meal_wish'] ?? null),
+            'crush_contact'    => $this->clean($input['crush_contact'] ?? null),
+            'pickup_raw'       => $pickupRaw,
+            'pickup_name'      => $pickup['name'],
+            'pickup_address'   => $pickup['address'],
+            'pickup_clean_url' => $pickup['clean_url'],
         ]);
 
         $final = $invite['date_mode'] === 'confirm' ? InviteState::PENDING_SENDER : InviteState::CONFIRMED;

@@ -21,6 +21,8 @@ use App\Core\View;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
+use App\Maps\CurlFetcher;
+use App\Maps\LinkResolver;
 use App\Respond\RespondController;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
@@ -65,8 +67,9 @@ $responseRepo = new ResponseRepo($pdo, $clock);
 $themeRepo    = new ThemeRepo($pdo);
 $abEvents     = new AbEventRepo($pdo, $clock);
 $assigner     = new ABAssigner($themeRepo, $inviteRepo);
+$linkResolver = new LinkResolver(new CurlFetcher());
 $respondCtrl  = new RespondController(
-    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock
+    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver
 );
 
 $router = new Router();
