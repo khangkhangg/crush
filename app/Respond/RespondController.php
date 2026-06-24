@@ -8,6 +8,7 @@ use App\Core\Clock;
 use App\Core\Csrf;
 use App\Core\Response;
 use App\Core\View;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Invite\InviteState;
 use App\Invite\ResponseRepo;
@@ -31,6 +32,7 @@ final class RespondController
         private LinkResolver $maps,
         private Postman $postman,
         private CrushOnboarder $onboarder,
+        private InvitePlaceRepo $places,
     ) {}
 
     public function open(string $token): Response
@@ -67,6 +69,7 @@ final class RespondController
             'dateMode'    => $invite['date_mode'],
             'options'     => $this->invites->dateOptions((int) $invite['id']),
             'meals'       => MealOptions::CHOICES,
+            'places'      => $this->places->forInvite((int) $invite['id']),
         ]));
     }
 
@@ -129,6 +132,16 @@ final class RespondController
 
         $pickupRaw = $this->clean($input['pickup_raw'] ?? null);
         $pickup = $this->maps->resolve((string) ($pickupRaw ?? ''));
+        if ($pickupRaw === null && $meal !== null) {
+            $place = $this->places->forMeal((int) $invite['id'], $meal);
+            if ($place !== null) {
+                $pickup = [
+                    'name'      => $place['place_resolved_name'] ?: $place['place_name'],
+                    'address'   => $place['place_resolved_address'],
+                    'clean_url' => $place['place_clean_url'] ?: $place['place_url'],
+                ];
+            }
+        }
 
         $this->responses->store((int) $invite['id'], [
             'chosen_start'     => $start->format('Y-m-d H:i:s'),

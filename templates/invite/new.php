@@ -1,5 +1,5 @@
-<?php $error = $error ?? null; $old = $old ?? []; $csrf = $csrf ?? ''; ?>
-<?php $content = function () use ($e, $csrf, $error, $old) {
+<?php $error = $error ?? null; $old = $old ?? []; $csrf = $csrf ?? ''; $meals = $meals ?? []; ?>
+<?php $content = function () use ($e, $csrf, $error, $old, $meals) {
   $val = fn(string $k) => $e($old[$k] ?? '');
   ob_start(); ?>
   <h1 style="text-wrap:balance;">Send a crush invite</h1>
@@ -30,6 +30,18 @@
     <label style="display:flex;align-items:center;gap:8px;">
       <input type="checkbox" name="reveal_on_response" value="1"> Reveal me after they respond
     </label>
+    <fieldset style="border:0;padding:0;margin:0;">
+      <legend style="font-size:13px;font-weight:600;opacity:.7;">Suggest a spot for each vibe (optional)</legend>
+      <?php foreach (($meals ?? []) as $meal): ?>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+          <span style="min-width:72px;font-size:13px;opacity:.8;"><?= $e($meal['label']) ?></span>
+          <input type="text" name="places[<?= $e($meal['key']) ?>][name]" placeholder="restaurant name"
+                 style="flex:1;padding:9px;border-radius:10px;border:1px solid #e7d4ff;">
+          <input type="text" name="places[<?= $e($meal['key']) ?>][url]" placeholder="maps link (optional)"
+                 style="flex:1;padding:9px;border-radius:10px;border:1px solid #e7d4ff;">
+        </div>
+      <?php endforeach; ?>
+    </fieldset>
     <button type="submit"
             style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;cursor:pointer;">
       Create my invite
