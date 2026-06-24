@@ -1,4 +1,4 @@
-<?php $error = $error ?? null; $old = $old ?? []; $csrf = $csrf ?? ''; $meals = $meals ?? []; $me = $me ?? null; ?>
+<?php $error = $error ?? null; $old = $old ?? []; $csrf = $csrf ?? ''; $meals = $meals ?? []; $me = $me ?? null; $cardClass = 'card--wide'; ?>
 <?php $content = function () use ($e, $csrf, $error, $old, $meals, $me) {
   $val = fn(string $k) => $e($old[$k] ?? '');
   ob_start(); ?>
@@ -40,18 +40,35 @@
     <label style="display:flex;align-items:center;gap:8px;">
       <input type="checkbox" name="reveal_on_response" value="1"> Reveal me after they respond
     </label>
+    <style>
+      .iv-places { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+      .iv-place { display:grid; grid-template-columns:84px 1.4fr 1fr 1.4fr; gap:8px; align-items:center; }
+      .iv-place > .iv-label { font-size:13px; opacity:.8; }
+      .iv-place input { min-width:0; width:100%; padding:9px; border-radius:10px; border:1px solid #e7d4ff; }
+      @media (max-width:560px) {
+        .iv-place { grid-template-columns:1fr 1fr; }
+        .iv-place > .iv-label { grid-column:1 / -1; font-weight:600; opacity:.7; }
+        .iv-place .iv-url { grid-column:1 / -1; }
+      }
+    </style>
     <fieldset style="border:0;padding:0;margin:0;">
       <legend style="font-size:13px;font-weight:600;opacity:.7;">Suggest a spot for each vibe (optional)</legend>
-      <?php foreach (($meals ?? []) as $meal): ?>
-        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-          <span style="min-width:72px;font-size:13px;opacity:.8;"><?= $e($meal['label']) ?></span>
-          <input type="text" name="places[<?= $e($meal['key']) ?>][name]" placeholder="restaurant name"
-                 style="flex:1;padding:9px;border-radius:10px;border:1px solid #e7d4ff;">
-          <input type="text" name="places[<?= $e($meal['key']) ?>][url]" placeholder="maps link (optional)"
-                 style="flex:1;padding:9px;border-radius:10px;border:1px solid #e7d4ff;">
-        </div>
-      <?php endforeach; ?>
+      <div class="iv-places">
+        <?php foreach (($meals ?? []) as $meal): ?>
+          <div class="iv-place">
+            <span class="iv-label"><?= $e($meal['label']) ?></span>
+            <input type="text" name="places[<?= $e($meal['key']) ?>][name]" placeholder="restaurant name">
+            <input type="text" name="places[<?= $e($meal['key']) ?>][cuisine]" placeholder="cuisine" list="cuisines">
+            <input class="iv-url" type="text" name="places[<?= $e($meal['key']) ?>][url]" placeholder="maps link (optional)">
+          </div>
+        <?php endforeach; ?>
+      </div>
     </fieldset>
+    <datalist id="cuisines">
+      <?php foreach (['Italian','Japanese','Korean','Vietnamese','Thai','Chinese','Mexican','Indian','American','French','Mediterranean','BBQ','Vegan','Dessert'] as $c): ?>
+        <option value="<?= $e($c) ?>"></option>
+      <?php endforeach; ?>
+    </datalist>
     <button type="submit"
             style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;cursor:pointer;">
       Create my invite

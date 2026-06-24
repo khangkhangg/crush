@@ -216,16 +216,24 @@ final class RespondController
     private function renderInvite(array $invite, string $theme, ?string $error = null, int $status = 200): Response
     {
         $key = in_array($theme, self::THEME_TEMPLATES, true) ? $theme : 'bubblegum';
+        $placesByMeal = $this->places->forInvite((int) $invite['id']);
+        $curated = array_values(array_filter(
+            MealOptions::CHOICES,
+            static fn(array $m): bool => isset($placesByMeal[$m['key']])
+        ));
+        $visibleMeals = $curated !== [] ? $curated : MealOptions::CHOICES;
+        $collapseMeal = count($visibleMeals) === 1 ? $visibleMeals[0] : null;
         return Response::html($this->view->render('respond/themes/' . $key, [
-            'title'       => 'You have an invite',
-            'theme'       => $key,
-            'csrf'        => $this->csrf->token(),
-            'token'       => $invite['public_token'],
-            'senderLabel' => $this->senderLabel($invite),
-            'message'     => $invite['message'],
-            'meals'       => MealOptions::CHOICES,
-            'places'      => $this->places->forInvite((int) $invite['id']),
-            'error'       => $error,
+            'title'        => 'You have an invite',
+            'theme'        => $key,
+            'csrf'         => $this->csrf->token(),
+            'token'        => $invite['public_token'],
+            'senderLabel'  => $this->senderLabel($invite),
+            'message'      => $invite['message'],
+            'meals'        => $visibleMeals,
+            'places'       => $placesByMeal,
+            'collapseMeal' => $collapseMeal,
+            'error'        => $error,
         ]), $status);
     }
 

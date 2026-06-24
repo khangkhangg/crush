@@ -110,10 +110,11 @@ final class InviteController
                 continue;
             }
             $url = trim((string) ($placeInput[$key]['url'] ?? ''));
+            $cuisine = trim((string) ($placeInput[$key]['cuisine'] ?? '')) ?: null;
             $resolved = $url !== '' ? $this->maps->resolve($url) : ['name' => null, 'address' => null, 'clean_url' => null];
             $this->places->add(
                 (int) $invite['id'], $key, $name, $url !== '' ? $url : null,
-                $resolved['name'], $resolved['address'], $resolved['clean_url']
+                $resolved['name'], $resolved['address'], $resolved['clean_url'], $cuisine
             );
         }
 

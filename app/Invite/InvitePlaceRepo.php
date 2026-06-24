@@ -14,19 +14,21 @@ final class InvitePlaceRepo
         ?string $placeUrl,
         ?string $resolvedName,
         ?string $resolvedAddress,
-        ?string $cleanUrl
+        ?string $cleanUrl,
+        ?string $cuisine = null
     ): void {
         $this->pdo->prepare(
             'INSERT INTO invite_places
-               (invite_id, meal_key, place_name, place_url, place_resolved_name, place_resolved_address, place_clean_url)
-             VALUES (?, ?, ?, ?, ?, ?, ?)
+               (invite_id, meal_key, place_name, place_url, place_resolved_name, place_resolved_address, place_clean_url, cuisine)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
                place_name = VALUES(place_name),
                place_url = VALUES(place_url),
                place_resolved_name = VALUES(place_resolved_name),
                place_resolved_address = VALUES(place_resolved_address),
-               place_clean_url = VALUES(place_clean_url)'
-        )->execute([$inviteId, $mealKey, $placeName, $placeUrl, $resolvedName, $resolvedAddress, $cleanUrl]);
+               place_clean_url = VALUES(place_clean_url),
+               cuisine = VALUES(cuisine)'
+        )->execute([$inviteId, $mealKey, $placeName, $placeUrl, $resolvedName, $resolvedAddress, $cleanUrl, $cuisine]);
     }
 
     /** @return array<string,array> keyed by meal_key */

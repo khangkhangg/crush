@@ -1,0 +1,1 @@
+ALTER TABLE invite_places ADD COLUMN cuisine VARCHAR(40) NULL;
