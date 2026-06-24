@@ -47,7 +47,7 @@ final class InviteController
         if ($userId === null) {
             return $this->redirect('/login');
         }
-        return $this->renderForm();
+        return $this->renderForm(null, [], 200, $this->users->findById($userId));
     }
 
     public function create(?int $userId, array $input, string $csrf): Response
@@ -139,7 +139,7 @@ final class InviteController
         ]));
     }
 
-    private function renderForm(?string $error = null, array $old = [], int $status = 200): Response
+    private function renderForm(?string $error = null, array $old = [], int $status = 200, ?array $me = null): Response
     {
         return Response::html($this->view->render('invite/new', [
             'title' => 'New invite',
@@ -147,6 +147,7 @@ final class InviteController
             'error' => $error,
             'old'   => $old,
             'meals' => MealOptions::CHOICES,
+            'me'    => $me,
         ]), $status);
     }
 
