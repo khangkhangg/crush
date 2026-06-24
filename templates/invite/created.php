@@ -15,7 +15,7 @@
   </div>
   <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
     <button type="button" id="nativeShare" hidden
-            style="display:flex;align-items:center;gap:6px;padding:9px 12px;border:1px solid #e7d4ff;border-radius:12px;background:#fff;color:#5a2a52;font-weight:600;cursor:pointer;">
+            style="align-items:center;gap:6px;padding:9px 12px;border:1px solid #e7d4ff;border-radius:12px;background:#fff;color:#5a2a52;font-weight:600;cursor:pointer;">
       <svg width="18" height="18"><use href="#ic-share"/></svg> Share
     </button>
     <?php foreach ($shareLinks as $s): ?>
@@ -31,11 +31,15 @@
     var url = <?= json_encode($link, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     var copy = document.getElementById('copyBtn');
     if (copy) copy.addEventListener('click', function(){
-      navigator.clipboard && navigator.clipboard.writeText(url).then(function(){ copy.setAttribute('aria-label','Copied'); });
+      navigator.clipboard && navigator.clipboard.writeText(url).then(function(){
+        copy.setAttribute('aria-label','Copied');
+        setTimeout(function(){ copy.setAttribute('aria-label','Copy link'); }, 2000);
+      });
     });
     var ns = document.getElementById('nativeShare');
     if (ns && navigator.share) {
       ns.hidden = false;
+      ns.style.display = 'flex';
       ns.addEventListener('click', function(){ navigator.share({ url: url }).catch(function(){}); });
     }
   })();
