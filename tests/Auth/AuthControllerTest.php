@@ -12,6 +12,7 @@ use App\Core\Csrf;
 use App\Core\View;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
+use Tests\Support\SpyMailer;
 
 final class AuthControllerTest extends DatabaseTestCase
 {
@@ -21,8 +22,7 @@ final class AuthControllerTest extends DatabaseTestCase
         $users = new UserRepo($this->pdo(), $clock);
         $magic = new MagicLink($this->pdo(), $users, $clock, 900);
         $view  = new View(\dirname(__DIR__, 2) . '/templates');
-        $storage = sys_get_temp_dir() . '/crush-magic-' . bin2hex(random_bytes(3)) . '.txt';
-        return new AuthController($view, $session, $csrf, $magic, $storage, 'http://localhost');
+        return new AuthController($view, $session, $csrf, $magic, new SpyMailer(), 'http://localhost');
     }
 
     public function test_show_login_renders_form_with_csrf(): void

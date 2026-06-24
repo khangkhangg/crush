@@ -18,12 +18,16 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Core\SystemClock;
 use App\Core\View;
+use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
+use App\Mail\MailerFactory;
+use App\Mail\Postman;
 use App\Maps\CurlFetcher;
 use App\Maps\LinkResolver;
 use App\Respond\RespondController;
+use App\Settings\SettingsRepo;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
 use App\Theme\ThemeRepo;
@@ -41,9 +45,13 @@ $pdo     = DB::connect($config);
 $users   = new UserRepo($pdo, $clock);
 $magic   = new MagicLink($pdo, $users, $clock);
 
+$settings = new SettingsRepo($pdo);
+$mailer   = MailerFactory::make($settings);
+$postman  = new Postman($mailer, new IcsBuilder($clock), $view, (string) $config->get('app_url', 'http://localhost'));
+
 $auth = new AuthController(
     $view, $session, $csrf, $magic,
-    dirname(__DIR__) . '/storage/last-magic-link.txt',
+    $mailer,
     (string) $config->get('app_url', 'http://localhost'),
 );
 
@@ -59,7 +67,8 @@ $googleCtrl     = new GoogleController($googleAuth, $session, $store, $googleCli
 $inviteRepo = new InviteRepo($pdo, $clock);
 $inviteCtrl = new InviteController(
     $view, $csrf, $inviteRepo, $users, $clock,
-    (string) $config->get('app_url', 'http://localhost')
+    (string) $config->get('app_url', 'http://localhost'),
+    $postman
 );
 $currentUserId = static fn(): ?int => $session->userId();
 
@@ -69,7 +78,7 @@ $abEvents     = new AbEventRepo($pdo, $clock);
 $assigner     = new ABAssigner($themeRepo, $inviteRepo);
 $linkResolver = new LinkResolver(new CurlFetcher());
 $respondCtrl  = new RespondController(
-    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver
+    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman
 );
 
 $router = new Router();

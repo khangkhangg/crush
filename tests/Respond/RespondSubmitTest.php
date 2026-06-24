@@ -7,9 +7,11 @@ use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
+use App\Ics\IcsBuilder;
 use App\Invite\InviteRepo;
 use App\Invite\InviteState;
 use App\Invite\ResponseRepo;
+use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Respond\RespondController;
 use App\Theme\AbEventRepo;
@@ -18,6 +20,7 @@ use App\Theme\ThemeRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
+use Tests\Support\SpyMailer;
 
 final class RespondSubmitTest extends DatabaseTestCase
 {
@@ -37,7 +40,8 @@ final class RespondSubmitTest extends DatabaseTestCase
             new ABAssigner(new ThemeRepo($this->pdo()), $invites, fn(int $m) => 0),
             new AbEventRepo($this->pdo(), $this->clock),
             $this->clock,
-            new LinkResolver(new FakeFetcher([]))
+            new LinkResolver(new FakeFetcher([])),
+            new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost')
         );
     }
 

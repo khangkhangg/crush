@@ -8,6 +8,7 @@ use App\Core\Clock;
 use App\Core\Csrf;
 use App\Core\Response;
 use App\Core\View;
+use App\Mail\Postman;
 
 final class InviteController
 {
@@ -18,6 +19,7 @@ final class InviteController
         private UserRepo $users,
         private Clock $clock,
         private string $appUrl,
+        private Postman $postman,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -77,6 +79,8 @@ final class InviteController
                 $this->invites->addDateOption($invite['id'], $start, $end);
             }
         }
+
+        $this->postman->sendInvite($invite);
 
         return $this->redirect('/i/' . $invite['public_token'] . '/created');
     }
