@@ -16,6 +16,7 @@ use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
+use App\Share\ShareTargetRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
@@ -40,7 +41,8 @@ final class InviteCuisineCreateTest extends DatabaseTestCase
             $this->clock, 'http://localhost',
             new Postman(new SpyMailer(), new IcsBuilder($this->clock), new EmailTemplateRepo($this->pdo()), 'http://localhost'),
             new RateLimiter($this->pdo(), $this->clock), new BlockRepo($this->pdo(), $this->clock),
-            $places, new LinkResolver(new FakeFetcher([]))
+            $places, new LinkResolver(new FakeFetcher([])),
+            new ShareTargetRepo($this->pdo())
         );
     }
 

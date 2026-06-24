@@ -1,0 +1,1 @@
+ALTER TABLE invites MODIFY crush_email VARCHAR(191) NULL;

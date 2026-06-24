@@ -18,7 +18,7 @@ use App\Theme\ThemeRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
 
-final class AdminTemplatesTest extends DatabaseTestCase
+final class AdminShareTest extends DatabaseTestCase
 {
     private FrozenClock $clock;
 
@@ -46,49 +46,40 @@ final class AdminTemplatesTest extends DatabaseTestCase
         return $u['id'];
     }
 
-    public function test_templates_list_requires_admin(): void
+    public function test_list_requires_admin(): void
     {
-        $this->assertSame(403, $this->controller(new Csrf(new ArrayStore()))->templates(null)->status());
+        $this->assertSame(403, $this->controller(new Csrf(new ArrayStore()))->shareList(null)->status());
     }
 
-    public function test_templates_list_renders(): void
+    public function test_list_renders_targets(): void
     {
-        $res = $this->controller(new Csrf(new ArrayStore()))->templates($this->adminId());
+        $res = $this->controller(new Csrf(new ArrayStore()))->shareList($this->adminId());
         $this->assertSame(200, $res->status());
-        $this->assertStringContainsString('welcome', $res->body());
-    }
-
-    public function test_edit_renders_exact_row(): void
-    {
-        $csrf = new Csrf(new ArrayStore());
-        $res = $this->controller($csrf)->editTemplate($this->adminId(), 'welcome', 'vi');
-        $this->assertSame(200, $res->status());
-        $this->assertStringContainsString($csrf->token(), $res->body());
-        $this->assertStringContainsString('name="body_html"', $res->body());
+        $this->assertStringContainsString('whatsapp', $res->body());
     }
 
     public function test_save_updates_and_redirects(): void
     {
         $csrf = new Csrf(new ArrayStore());
         $ctrl = $this->controller($csrf);
-        $adminId = $this->adminId();
-        $res = $ctrl->saveTemplate($adminId, [
-            'key' => 'welcome', 'lang' => 'en', 'subject' => 'Hi {{name}}', 'body_html' => '<p>{{link}}</p>',
+        $res = $ctrl->saveShare($this->adminId(), [
+            'key' => 'whatsapp', 'label' => 'WhatsApp', 'url_template' => 'https://wa.me/?text={url}', 'enabled' => '1',
         ], $csrf->token());
         $this->assertSame(302, $res->status());
-        $this->assertSame('Hi {{name}}', (new EmailTemplateRepo($this->pdo()))->getExact('welcome', 'en')['subject']);
+    }
+
+    public function test_save_rejects_unsafe_template(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $res = $this->controller($csrf)->saveShare($this->adminId(), [
+            'key' => 'whatsapp', 'label' => 'X', 'url_template' => 'javascript:alert(1)', 'enabled' => '1',
+        ], $csrf->token());
+        $this->assertSame(422, $res->status());
     }
 
     public function test_save_rejects_bad_csrf(): void
     {
-        $csrf = new Csrf(new ArrayStore());
-        $res = $this->controller($csrf)->saveTemplate($this->adminId(), ['key' => 'welcome', 'lang' => 'en'], 'wrong');
+        $res = $this->controller(new Csrf(new ArrayStore()))->saveShare($this->adminId(), ['key' => 'whatsapp'], 'wrong');
         $this->assertSame(400, $res->status());
-    }
-
-    public function test_edit_unknown_template_returns_404(): void
-    {
-        $res = $this->controller(new Csrf(new ArrayStore()))->editTemplate($this->adminId(), 'nonexistent', 'xx');
-        $this->assertSame(404, $res->status());
     }
 }

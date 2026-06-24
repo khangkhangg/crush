@@ -16,8 +16,13 @@
   <?php if ($error): ?><p role="alert" style="color:#b3243b;"><?= $e($error) ?></p><?php endif; ?>
   <form method="post" action="/invites" style="display:flex;flex-direction:column;gap:12px;">
     <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
+    <fieldset style="border:0;padding:0;margin:0;display:flex;gap:16px;flex-wrap:wrap;">
+      <legend style="font-size:13px;font-weight:600;opacity:.7;">How will you send it?</legend>
+      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="delivery" value="email" checked> Email it to them</label>
+      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="delivery" value="link"> I will share the link myself</label>
+    </fieldset>
     <label>Their email
-      <input type="email" name="crush_email" required value="<?= $val('crush_email') ?>"
+      <input type="email" id="crush_email" name="crush_email" value="<?= $val('crush_email') ?>"
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
     </label>
     <label>Their name (optional)
@@ -74,6 +79,19 @@
       Create my invite
     </button>
   </form>
+    <script>
+    (function(){
+      var radios = document.querySelectorAll('input[name="delivery"]');
+      var email = document.getElementById('crush_email');
+      function sync(){
+        var mode = document.querySelector('input[name="delivery"]:checked');
+        var isEmail = !mode || mode.value === 'email';
+        if (email) { email.required = isEmail; email.placeholder = isEmail ? '' : 'optional'; }
+      }
+      radios.forEach(function(r){ r.addEventListener('change', sync); });
+      sync();
+    })();
+    </script>
   <?php return ob_get_clean(); };
 $body = $content();
 include __DIR__ . '/../layout.php';

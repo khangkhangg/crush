@@ -14,6 +14,6 @@
   .flash{background:#eef9f0;border:1px solid #cce9d4;color:#246b39;padding:10px;border-radius:10px;margin-top:12px}
 </style></head>
 <body><div class="wrap">
-  <nav><a href="/admin">Dashboard</a><a href="/admin/settings">Settings</a><a href="/admin/themes">Themes</a><a href="/admin/moderation">Moderation</a><a href="/admin/templates">Templates</a></nav>
+  <nav><a href="/admin">Dashboard</a><a href="/admin/settings">Settings</a><a href="/admin/themes">Themes</a><a href="/admin/moderation">Moderation</a><a href="/admin/templates">Templates</a><a href="/admin/share">Share</a></nav>
   <?= $body ?>
 </div></body></html>

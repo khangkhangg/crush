@@ -16,6 +16,7 @@ use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
+use App\Share\ShareTargetRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
@@ -48,7 +49,8 @@ final class InvitePlacesCreateTest extends DatabaseTestCase
         $ctrl = new InviteController(
             $view, $csrf, $invites, $users, $this->clock, 'http://localhost', $postman,
             new RateLimiter($this->pdo(), $this->clock), new BlockRepo($this->pdo(), $this->clock),
-            $placeRepo, new LinkResolver($fetcher)
+            $placeRepo, new LinkResolver($fetcher),
+            new ShareTargetRepo($this->pdo())
         );
 
         $sender = $users->create('sue@x.test', 'Sue', 'magic')['id'];

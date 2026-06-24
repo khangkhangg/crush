@@ -13,6 +13,7 @@ use App\Mail\EmailTemplateRepo;
 use App\Mail\MailerFactory;
 use App\Security\BlockRepo;
 use App\Settings\SettingsRepo;
+use App\Share\ShareTargetRepo;
 use App\Theme\AbEventRepo;
 use App\Theme\ThemeRepo;
 
@@ -43,6 +44,7 @@ final class AdminController
         private BlockRepo $blocks,
         private string $appUrl,
         private EmailTemplateRepo $emailTemplates,
+        private ShareTargetRepo $shareTargets,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -225,6 +227,53 @@ final class AdminController
         }
         $this->emailTemplates->update($key, $lang, $subject, $body);
         return (new Response('', 302))->withHeader('Location', '/admin/templates');
+    }
+
+    public function shareList(?int $userId): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all()]);
+    }
+
+    public function editShare(?int $userId, string $key): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        $row = $this->shareTargets->getExact($key);
+        if ($row === null) {
+            return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'flash' => 'Unknown target.'])->withStatus(404);
+        }
+        return $this->render('admin/share_edit', ['title' => 'Edit share button', 'csrf' => $this->csrf->token(), 'target' => $row]);
+    }
+
+    public function saveShare(?int $userId, array $input, string $csrf): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        if (!$this->csrf->validate($csrf)) {
+            return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'flash' => 'Session expired, please retry.'])->withStatus(400);
+        }
+        $key = (string) ($input['key'] ?? '');
+        $label = (string) ($input['label'] ?? '');
+        $template = (string) ($input['url_template'] ?? '');
+        $enabled = !empty($input['enabled']);
+        if ($key === '' || $this->shareTargets->getExact($key) === null) {
+            return $this->render('admin/share', [
+                'title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'flash' => 'Unknown share button.',
+            ])->withStatus(404);
+        }
+        if ($label === '' || !ShareTargetRepo::isAllowed($template)) {
+            return $this->render('admin/share', [
+                'title' => 'Share buttons', 'targets' => $this->shareTargets->all(),
+                'flash' => 'A share link must use http(s), sms, or mailto and have a label.',
+            ])->withStatus(422);
+        }
+        $this->shareTargets->update($key, $label, $template, $enabled);
+        return (new Response('', 302))->withHeader('Location', '/admin/share');
     }
 
     private function requireAdmin(?int $userId): ?array

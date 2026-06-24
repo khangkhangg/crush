@@ -13,6 +13,7 @@ use App\Maps\LinkResolver;
 use App\Respond\MealOptions;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
+use App\Share\ShareTargetRepo;
 
 final class InviteController
 {
@@ -28,6 +29,7 @@ final class InviteController
         private BlockRepo $blocks,
         private InvitePlaceRepo $places,
         private LinkResolver $maps,
+        private ShareTargetRepo $share,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -59,29 +61,36 @@ final class InviteController
             return $this->renderForm('Your session expired. Please try again.', $input, 400);
         }
 
+        $delivery = ($input['delivery'] ?? 'email') === 'link' ? 'link' : 'email';
         $email = trim((string) ($input['crush_email'] ?? ''));
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return $this->renderForm('Please enter a valid email for your crush.', $input, 422);
+
+        if ($delivery === 'email') {
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->renderForm('Please enter a valid email for your crush.', $input, 422);
+            }
+        } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->renderForm('That email does not look right — leave it blank to share the link yourself.', $input, 422);
         }
 
         $dateMode = ($input['date_mode'] ?? 'instant') === 'confirm' ? 'confirm' : 'instant';
-
         $sender = $this->users->findById($userId);
 
-        // Check the tighter per-email cap first, then the per-sender cap, with
-        // short-circuit AND so a blocked email never burns the sender's own quota.
-        if (!$this->limits->hit('invites_per_email', strtolower($email), 3, 86400)
-            || !$this->limits->hit('invites_per_sender', (string) $userId, 20, 86400)) {
+        if ($email !== '') {
+            // Tighter per-email cap first, then per-sender, with short-circuit AND.
+            if (!$this->limits->hit('invites_per_email', strtolower($email), 3, 86400)
+                || !$this->limits->hit('invites_per_sender', (string) $userId, 20, 86400)) {
+                return $this->renderForm('You have sent too many invites for now. Please try again later.', $input, 429);
+            }
+            if ($this->blocks->isBlocked($userId, $email)) {
+                return $this->renderForm('This person has asked not to receive invites.', $input, 403);
+            }
+        } elseif (!$this->limits->hit('invites_per_sender', (string) $userId, 20, 86400)) {
             return $this->renderForm('You have sent too many invites for now. Please try again later.', $input, 429);
-        }
-
-        if ($this->blocks->isBlocked($userId, $email)) {
-            return $this->renderForm('This person has asked not to receive invites.', $input, 403);
         }
 
         $invite = $this->invites->create([
             'sender_id'          => $userId,
-            'crush_email'        => $email,
+            'crush_email'        => $email !== '' ? $email : null,
             'crush_name'         => trim((string) ($input['crush_name'] ?? '')) ?: null,
             'is_anonymous'       => !empty($input['is_anonymous']),
             'reveal_on_response' => !empty($input['reveal_on_response']),
@@ -118,7 +127,9 @@ final class InviteController
             );
         }
 
-        $this->postman->sendInvite($invite);
+        if ($delivery === 'email') {
+            $this->postman->sendInvite($invite);
+        }
 
         return $this->redirect('/i/' . $invite['public_token'] . '/created');
     }
@@ -136,10 +147,24 @@ final class InviteController
                 'appUrl'  => rtrim($this->appUrl, '/'),
             ]), 404);
         }
+        $link = rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'];
+        $shareLinks = [];
+        foreach ($this->share->listEnabled() as $t) {
+            if (!\App\Share\ShareTargetRepo::isAllowed((string) $t['url_template'])) {
+                continue;
+            }
+            $shareLinks[] = [
+                'label' => $t['label'],
+                'icon'  => $t['icon'],
+                'href'  => $this->share->render((string) $t['url_template'], $link),
+            ];
+        }
+
         return Response::html($this->view->render('invite/created', [
-            'title'  => 'Invite ready',
-            'link'   => rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'],
-            'invite' => $invite,
+            'title'      => 'Invite ready',
+            'link'       => $link,
+            'invite'     => $invite,
+            'shareLinks' => $shareLinks,
         ]));
     }
 
