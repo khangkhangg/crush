@@ -11,6 +11,7 @@ use App\Core\View;
 use App\Invite\InviteRepo;
 use App\Invite\InviteState;
 use App\Invite\ResponseRepo;
+use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
@@ -27,6 +28,7 @@ final class RespondController
         private AbEventRepo $events,
         private Clock $clock,
         private LinkResolver $maps,
+        private Postman $postman,
     ) {}
 
     public function open(string $token): Response
@@ -142,6 +144,14 @@ final class RespondController
         $this->invites->updateStatus((int) $invite['id'], InviteState::RESPONDED);
         $this->invites->updateStatus((int) $invite['id'], $final);
         $this->events->log((int) $invite['id'], $theme, 'completed');
+
+        $sender = $this->users->findById((int) $invite['sender_id']);
+        if ($sender !== null) {
+            $stored = $this->responses->findByInvite((int) $invite['id']);
+            if ($stored !== null) {
+                $this->postman->sendResult($invite, $stored, $sender);
+            }
+        }
 
         return Response::html($this->view->render('respond/confirmed', [
             'title'       => 'Your answer is in',

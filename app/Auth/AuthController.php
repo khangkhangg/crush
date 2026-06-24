@@ -14,7 +14,7 @@ final class AuthController
         private Session $session,
         private Csrf $csrf,
         private MagicLink $magic,
-        private string $magicLinkSink,   // file path: where the dev link is written until email is wired
+        private \App\Mail\Mailer $mailer,
         private string $appUrl,
     ) {}
 
@@ -52,8 +52,14 @@ final class AuthController
 
         $token = $this->magic->start($email);
         $link  = rtrim($this->appUrl, '/') . '/auth/magic/' . $token;
-        // Until Plan 6 wires the mailer, persist the link so dev can use it.
-        @file_put_contents($this->magicLinkSink, $link . "\n", FILE_APPEND);
+        $html = '<p style="font-family:sans-serif">Tap to sign in to Crush:</p>'
+              . '<p><a href="' . htmlspecialchars($link, ENT_QUOTES) . '">Sign in</a></p>'
+              . '<p style="color:#999;font-size:12px">Or paste: ' . htmlspecialchars($link, ENT_QUOTES) . '</p>';
+        try {
+            $this->mailer->send(new \App\Mail\Email($email, 'Your Crush sign-in link', $html));
+        } catch (\Throwable $e) {
+            error_log('Crush magic-link mail failed: ' . $e->getMessage());
+        }
 
         return Response::html($this->view->render('auth/login', [
             'csrf'  => $this->csrf->token(),

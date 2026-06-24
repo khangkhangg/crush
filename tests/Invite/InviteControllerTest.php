@@ -7,10 +7,13 @@ use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
+use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
+use App\Mail\Postman;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
+use Tests\Support\SpyMailer;
 
 final class InviteControllerTest extends DatabaseTestCase
 {
@@ -24,7 +27,8 @@ final class InviteControllerTest extends DatabaseTestCase
             $view, $csrf,
             new InviteRepo($this->pdo(), $this->clock),
             new UserRepo($this->pdo(), $this->clock),
-            $this->clock, 'http://localhost'
+            $this->clock, 'http://localhost',
+            new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost')
         );
     }
 
