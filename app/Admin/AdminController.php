@@ -261,7 +261,12 @@ final class AdminController
         $label = (string) ($input['label'] ?? '');
         $template = (string) ($input['url_template'] ?? '');
         $enabled = !empty($input['enabled']);
-        if ($key === '' || $label === '' || !ShareTargetRepo::isAllowed($template)) {
+        if ($key === '' || $this->shareTargets->getExact($key) === null) {
+            return $this->render('admin/share', [
+                'title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'flash' => 'Unknown share button.',
+            ])->withStatus(404);
+        }
+        if ($label === '' || !ShareTargetRepo::isAllowed($template)) {
             return $this->render('admin/share', [
                 'title' => 'Share buttons', 'targets' => $this->shareTargets->all(),
                 'flash' => 'A share link must use http(s), sms, or mailto and have a label.',
