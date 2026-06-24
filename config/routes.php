@@ -78,6 +78,16 @@ return static function (
     $router->add('GET',  '/admin/moderation',    static fn(): Response => $admin->moderation($currentUserId(), (static fn($v) => is_string($v) ? $v : null)($_GET['q'] ?? null)));
     $router->add('POST', '/admin/block',         static fn(): Response => $admin->blockFromAdmin($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 
+    $router->add('GET',  '/admin/templates',      static fn(): Response => $admin->templates($currentUserId()));
+    $router->add('GET',  '/admin/templates/edit', static fn(): Response => $admin->editTemplate(
+        $currentUserId(),
+        (static fn($v) => is_string($v) ? $v : '')($_GET['key'] ?? ''),
+        (static fn($v) => is_string($v) ? $v : '')($_GET['lang'] ?? '')
+    ));
+    $router->add('POST', '/admin/templates',      static fn(): Response => $admin->saveTemplate(
+        $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
+    ));
+
     $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 

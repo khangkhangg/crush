@@ -9,6 +9,7 @@ use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
 use App\Invite\InviteRepo;
+use App\Mail\EmailTemplateRepo;
 use App\Security\BlockRepo;
 use App\Settings\SettingsRepo;
 use App\Theme\AbEventRepo;
@@ -32,7 +33,8 @@ final class AdminAuthTest extends DatabaseTestCase
             new AbEventRepo($this->pdo(), $this->clock),
             new InviteRepo($this->pdo(), $this->clock),
             new BlockRepo($this->pdo(), $this->clock),
-            'http://localhost'
+            'http://localhost',
+            new EmailTemplateRepo($this->pdo())
         );
     }
 

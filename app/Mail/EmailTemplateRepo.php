@@ -42,6 +42,22 @@ final class EmailTemplateRepo
         return ['subject' => $subject, 'html' => $html];
     }
 
+    public function getExact(string $key, string $lang): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM email_templates WHERE `key` = ? AND lang = ?');
+        $stmt->execute([$key, $lang]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
+    public function update(string $key, string $lang, string $subject, string $bodyHtml): void
+    {
+        $this->pdo->prepare(
+            'INSERT INTO email_templates (`key`, lang, subject, body_html) VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE subject = VALUES(subject), body_html = VALUES(body_html)'
+        )->execute([$key, $lang, $subject, $bodyHtml]);
+    }
+
     /** @return array<int,array> */
     public function all(): array
     {
