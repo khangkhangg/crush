@@ -10,6 +10,7 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Invite\InviteController;
 use App\Landing\LandingController;
+use App\Maps\MapsController;
 use App\Profile\ProfileController;
 use App\Respond\RespondController;
 use App\Reveal\RevealController;
@@ -27,6 +28,7 @@ return static function (
     LandingController $landing,
     RevealController $reveal,
     AdminAuthController $adminAuth,
+    MapsController $maps,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -119,4 +121,8 @@ return static function (
 
     $router->add('GET', '/invites/{token}/response', static fn(string $token): Response => $reveal->show($currentUserId(), $token));
     $router->add('GET', '/invites/{token}/calendar', static fn(string $token): Response => $reveal->downloadIcs($currentUserId(), $token));
+
+    $router->add('GET', '/maps/preview', static fn(): Response => $maps->preview(
+        $currentUserId(), is_string($_GET['url'] ?? null) ? $_GET['url'] : ''
+    ));
 };

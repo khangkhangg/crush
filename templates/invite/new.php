@@ -124,6 +124,22 @@
       if (list) list.addEventListener('click', function(e){
         if (e.target.classList.contains('rm') && list.children.length > 1) e.target.closest('.iv-opt').remove();
       });
+
+      function showPrev(input){
+        var url = (input.value || '').trim();
+        var row = input.closest('.iv-opt');
+        var prev = row && row.querySelector('.iv-prev');
+        if (!prev) { prev = document.createElement('div'); prev.className = 'iv-prev'; row && row.appendChild(prev); }
+        if (!url) { prev.textContent = ''; return; }
+        prev.textContent = 'Looking up…';
+        fetch('/maps/preview?url=' + encodeURIComponent(url), { headers: { 'Accept': 'application/json' } })
+          .then(function(r){ return r.json(); })
+          .then(function(d){ prev.textContent = d && (d.name || d.address) ? ('Found: ' + (d.name || d.address)) : ''; })
+          .catch(function(){ prev.textContent = ''; });
+      }
+      document.addEventListener('change', function(e){
+        if (e.target && e.target.hasAttribute && e.target.hasAttribute('data-maps')) showPrev(e.target);
+      });
     })();
     </script>
   <?php return ob_get_clean(); };

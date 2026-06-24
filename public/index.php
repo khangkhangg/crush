@@ -32,6 +32,7 @@ use App\Mail\MailerFactory;
 use App\Mail\Postman;
 use App\Maps\CurlFetcher;
 use App\Maps\LinkResolver;
+use App\Maps\MapsController;
 use App\Profile\ProfileController;
 use App\Respond\CrushOnboarder;
 use App\Respond\RespondController;
@@ -83,6 +84,7 @@ $inviteRepo      = new InviteRepo($pdo, $clock);
 $blockRepo       = new BlockRepo($pdo, $clock);
 $invitePlaceRepo = new InvitePlaceRepo($pdo);
 $linkResolver    = new LinkResolver(new CurlFetcher());
+$mapsCtrl        = new MapsController($linkResolver);
 $shareTargets    = new ShareTargetRepo($pdo);
 $blockCtrl  = new BlockController($view, $inviteRepo, $blockRepo);
 $inviteCtrl = new InviteController(
@@ -113,7 +115,7 @@ $landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $po
 $revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock));
 
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
