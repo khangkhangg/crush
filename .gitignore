@@ -9,3 +9,4 @@ config/config.local.php
 theme-*.png
 .playwright-mcp/
 *-mobile.png
+v2-*.png
