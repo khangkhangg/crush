@@ -234,7 +234,7 @@ final class AdminController
         if ($this->requireAdmin($userId) === null) {
             return $this->forbidden();
         }
-        return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all()]);
+        return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'csrf' => $this->csrf->token()]);
     }
 
     public function editShare(?int $userId, string $key): Response
@@ -247,6 +247,29 @@ final class AdminController
             return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'flash' => 'Unknown target.'])->withStatus(404);
         }
         return $this->render('admin/share_edit', ['title' => 'Edit share button', 'csrf' => $this->csrf->token(), 'target' => $row]);
+    }
+
+    public function createShare(?int $userId, array $input, string $csrf): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        if (!$this->csrf->validate($csrf)) {
+            return $this->render('admin/share', ['title' => 'Share buttons', 'targets' => $this->shareTargets->all(), 'flash' => 'Session expired, please retry.'])->withStatus(400);
+        }
+        $key = strtolower(trim((string) ($input['key'] ?? '')));
+        $label = (string) ($input['label'] ?? '');
+        $icon = (string) ($input['icon'] ?? '') ?: 'ic-share';
+        $template = (string) ($input['url_template'] ?? '');
+        $enabled = !empty($input['enabled']);
+        if ($key === '' || $label === '' || !ShareTargetRepo::isAllowed($template) || $this->shareTargets->getExact($key) !== null) {
+            return $this->render('admin/share', [
+                'title' => 'Share buttons', 'targets' => $this->shareTargets->all(),
+                'flash' => 'New button needs a unique key, a label, and an http(s)/sms/mailto link.',
+            ])->withStatus(422);
+        }
+        $this->shareTargets->create($key, $label, $icon, $template, 100, $enabled);
+        return (new Response('', 302))->withHeader('Location', '/admin/share');
     }
 
     public function saveShare(?int $userId, array $input, string $csrf): Response

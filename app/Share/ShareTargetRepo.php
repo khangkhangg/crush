@@ -29,6 +29,13 @@ final class ShareTargetRepo
         return $row === false ? null : $row;
     }
 
+    public function create(string $key, string $label, string $icon, string $urlTemplate, int $sort, bool $enabled): void
+    {
+        $this->pdo->prepare(
+            'INSERT INTO share_targets (`key`, label, icon, url_template, sort, enabled) VALUES (?, ?, ?, ?, ?, ?)'
+        )->execute([$key, $label, $icon, $urlTemplate, $sort, $enabled ? 1 : 0]);
+    }
+
     public function update(string $key, string $label, string $urlTemplate, bool $enabled): void
     {
         $this->pdo->prepare(

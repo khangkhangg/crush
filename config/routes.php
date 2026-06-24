@@ -110,6 +110,9 @@ return static function (
     $router->add('POST', '/admin/share',      static fn(): Response => $admin->saveShare(
         $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
     ));
+    $router->add('POST', '/admin/share/new', static fn(): Response => $admin->createShare(
+        $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
+    ));
 
     $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
