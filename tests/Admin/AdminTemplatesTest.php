@@ -84,4 +84,10 @@ final class AdminTemplatesTest extends DatabaseTestCase
         $res = $this->controller($csrf)->saveTemplate($this->adminId(), ['key' => 'welcome', 'lang' => 'en'], 'wrong');
         $this->assertSame(400, $res->status());
     }
+
+    public function test_edit_unknown_template_returns_404(): void
+    {
+        $res = $this->controller(new Csrf(new ArrayStore()))->editTemplate($this->adminId(), 'nonexistent', 'xx');
+        $this->assertSame(404, $res->status());
+    }
 }

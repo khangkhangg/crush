@@ -192,7 +192,7 @@ final class AdminController
             return $this->render('admin/templates', [
                 'title' => 'Email templates', 'templates' => $this->emailTemplates->all(),
                 'flash' => 'Unknown template.',
-            ]);
+            ])->withStatus(404);
         }
         return $this->render('admin/template_edit', [
             'title'       => 'Edit template',
