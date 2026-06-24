@@ -60,9 +60,10 @@ final class InviteController
 
         $dateMode = ($input['date_mode'] ?? 'instant') === 'confirm' ? 'confirm' : 'instant';
 
-        $okSender = $this->limits->hit('invites_per_sender', (string) $userId, 20, 86400);
-        $okEmail  = $this->limits->hit('invites_per_email', strtolower($email), 3, 86400);
-        if (!$okSender || !$okEmail) {
+        // Check the tighter per-email cap first, then the per-sender cap, with
+        // short-circuit AND so a blocked email never burns the sender's own quota.
+        if (!$this->limits->hit('invites_per_email', strtolower($email), 3, 86400)
+            || !$this->limits->hit('invites_per_sender', (string) $userId, 20, 86400)) {
             return $this->renderForm('You have sent too many invites for now. Please try again later.', $input, 429);
         }
 
