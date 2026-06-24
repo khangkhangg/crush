@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Tests\Respond;
 
+use App\Auth\MagicLink;
 use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
@@ -13,6 +14,7 @@ use App\Invite\InviteState;
 use App\Invite\ResponseRepo;
 use App\Mail\Postman;
 use App\Maps\LinkResolver;
+use App\Respond\CrushOnboarder;
 use App\Respond\RespondController;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
@@ -33,15 +35,18 @@ final class RespondSubmitTest extends DatabaseTestCase
         $this->csrf = new Csrf(new ArrayStore());
         $view = new View(\dirname(__DIR__, 2) . '/templates');
         $invites = new InviteRepo($this->pdo(), $this->clock);
+        $users = new UserRepo($this->pdo(), $this->clock);
+        $postman = new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost');
         return new RespondController(
             $view, $this->csrf, $invites,
             new ResponseRepo($this->pdo(), $this->clock),
-            new UserRepo($this->pdo(), $this->clock),
+            $users,
             new ABAssigner(new ThemeRepo($this->pdo()), $invites, fn(int $m) => 0),
             new AbEventRepo($this->pdo(), $this->clock),
             $this->clock,
             new LinkResolver(new FakeFetcher([])),
-            new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost')
+            $postman,
+            new CrushOnboarder($users, new MagicLink($this->pdo(), $users, $this->clock, 900), $postman, 'http://localhost')
         );
     }
 

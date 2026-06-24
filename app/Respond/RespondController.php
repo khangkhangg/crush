@@ -15,6 +15,7 @@ use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
+use App\Respond\CrushOnboarder;
 
 final class RespondController
 {
@@ -29,6 +30,7 @@ final class RespondController
         private Clock $clock,
         private LinkResolver $maps,
         private Postman $postman,
+        private CrushOnboarder $onboarder,
     ) {}
 
     public function open(string $token): Response
@@ -151,6 +153,12 @@ final class RespondController
             if ($stored !== null) {
                 $this->postman->sendResult($invite, $stored, $sender);
             }
+        }
+
+        try {
+            $this->onboarder->onboard((string) $invite['crush_email'], $invite['crush_name']);
+        } catch (\Throwable $e) {
+            error_log('Crush onboarding failed: ' . $e->getMessage());
         }
 
         return Response::html($this->view->render('respond/confirmed', [
