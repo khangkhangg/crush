@@ -63,7 +63,11 @@ return static function (
     $router->add('GET',  '/i/{token}/created', static fn(string $token): Response => $invite->showCreated($currentUserId(), $token));
 
     $router->add('GET',  '/i/{token}', static fn(string $token): Response => $respond->open($token));
-    $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit($token, $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit(
+        $token, $_POST,
+        (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? ''),
+        (string) ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
+    ));
 
     $router->add('GET', '/unsubscribe/{token}', static fn(string $token): Response => $block->report($token));
 

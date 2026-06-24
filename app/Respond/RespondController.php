@@ -64,7 +64,7 @@ final class RespondController
         return $this->renderInvite($invite, $theme);
     }
 
-    public function submit(string $token, array $input, string $csrf): Response
+    public function submit(string $token, array $input, string $csrf, string $acceptLanguage = ''): Response
     {
         $invite = $this->invites->findByToken($token);
         if ($invite === null) {
@@ -160,7 +160,7 @@ final class RespondController
         }
 
         try {
-            $this->onboarder->onboard((string) $invite['crush_email'], $invite['crush_name']);
+            $this->onboarder->onboard((string) $invite['crush_email'], $invite['crush_name'], \App\Core\Locale::detect($acceptLanguage));
         } catch (\Throwable $e) {
             error_log('Crush onboarding failed: ' . $e->getMessage());
         }
@@ -223,8 +223,6 @@ final class RespondController
             'token'       => $invite['public_token'],
             'senderLabel' => $this->senderLabel($invite),
             'message'     => $invite['message'],
-            'dateMode'    => $invite['date_mode'],
-            'options'     => $this->invites->dateOptions((int) $invite['id']),
             'meals'       => MealOptions::CHOICES,
             'places'      => $this->places->forInvite((int) $invite['id']),
             'error'       => $error,

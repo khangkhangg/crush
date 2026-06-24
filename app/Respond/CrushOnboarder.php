@@ -16,14 +16,15 @@ final class CrushOnboarder
         private string $appUrl,
     ) {}
 
-    public function onboard(string $email, ?string $name): void
+    public function onboard(string $email, ?string $name, string $lang = 'en'): void
     {
         if ($this->users->findByEmail($email) !== null) {
             return; // existing account — never re-create or re-welcome
         }
-        $this->users->create($email, $name, 'magic');
+        $user = $this->users->create($email, $name, 'magic');
+        $this->users->setLang((int) $user['id'], $lang);
         $token = $this->magic->start($email);
         $link = rtrim($this->appUrl, '/') . '/auth/magic/' . $token;
-        $this->postman->sendWelcome($email, $name, $link);
+        $this->postman->sendWelcome($email, $name, $link, $lang);
     }
 }

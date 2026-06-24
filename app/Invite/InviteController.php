@@ -66,6 +66,8 @@ final class InviteController
 
         $dateMode = ($input['date_mode'] ?? 'instant') === 'confirm' ? 'confirm' : 'instant';
 
+        $sender = $this->users->findById($userId);
+
         // Check the tighter per-email cap first, then the per-sender cap, with
         // short-circuit AND so a blocked email never burns the sender's own quota.
         if (!$this->limits->hit('invites_per_email', strtolower($email), 3, 86400)
@@ -85,6 +87,7 @@ final class InviteController
             'reveal_on_response' => !empty($input['reveal_on_response']),
             'date_mode'          => $dateMode,
             'message'            => trim((string) ($input['message'] ?? '')) ?: null,
+            'lang'               => $sender['lang'] ?? null,
             'expires_at'         => $this->clock->now()->modify('+30 days')->format('Y-m-d H:i:s'),
         ]);
 
