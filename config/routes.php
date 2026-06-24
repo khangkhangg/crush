@@ -11,6 +11,7 @@ use App\Invite\InviteController;
 use App\Landing\LandingController;
 use App\Profile\ProfileController;
 use App\Respond\RespondController;
+use App\Reveal\RevealController;
 
 return static function (
     Router $router,
@@ -23,6 +24,7 @@ return static function (
     AdminController $admin,
     ProfileController $profile,
     LandingController $landing,
+    RevealController $reveal,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -69,4 +71,7 @@ return static function (
 
     $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+
+    $router->add('GET', '/invites/{token}/response', static fn(string $token): Response => $reveal->show($currentUserId(), $token));
+    $router->add('GET', '/invites/{token}/calendar', static fn(string $token): Response => $reveal->downloadIcs($currentUserId(), $token));
 };

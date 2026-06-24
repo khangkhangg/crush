@@ -13,6 +13,9 @@
         <li style="padding:14px;border-radius:14px;background:#faf2ff;border:1px solid #eadcff;">
           <strong><?= $e($inv['crush_name'] ?: $inv['crush_email']) ?></strong>
           <span style="float:right;font-size:12px;opacity:.7;"><?= $e($inv['status']) ?></span>
+          <?php if (in_array($inv['status'], ['responded', 'pending_sender', 'confirmed', 'closed'], true)): ?>
+            <a href="/invites/<?= $e($inv['public_token']) ?>/response" style="display:inline-block;margin-top:6px;color:#ff3d8b;font-weight:700;text-decoration:none;">They answered — view</a>
+          <?php endif; ?>
           <div style="font-size:12px;opacity:.7;margin-top:4px;word-break:break-all;">
             <?= $e($appUrl) ?>/i/<?= $e($inv['public_token']) ?>
           </div>
