@@ -111,7 +111,7 @@
 
       var list = document.getElementById('optList');
       var add = document.getElementById('addPlace');
-      if (add) add.addEventListener('click', function(){
+      if (add && list) add.addEventListener('click', function(){
         var n = list.children.length;
         var row = list.children[0].cloneNode(true);
         row.querySelectorAll('input').forEach(function(inp){
