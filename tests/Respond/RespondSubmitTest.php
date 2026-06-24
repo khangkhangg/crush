@@ -108,4 +108,41 @@ final class RespondSubmitTest extends DatabaseTestCase
         ], $this->csrf->token());
         $this->assertStringContainsString('Sue', $res->body());
     }
+
+    public function test_double_submit_returns_200_no_state_regression_no_duplicate_row(): void
+    {
+        $ctrl = $this->controller();
+        $invite = $this->makeInvite(['date_mode' => 'instant', 'is_anonymous' => false]);
+
+        // First submit — normal path, expect CONFIRMED.
+        $res1 = $ctrl->submit($invite['public_token'], [
+            'chosen_start' => '2026-02-10T19:00', 'meal_choice' => 'dinner',
+        ], $this->csrf->token());
+        $this->assertSame(200, $res1->status());
+
+        $invites   = new InviteRepo($this->pdo(), $this->clock);
+        $responses = new ResponseRepo($this->pdo(), $this->clock);
+
+        $reloaded = $invites->findByToken($invite['public_token']);
+        $this->assertSame(InviteState::CONFIRMED, $reloaded['status']);
+
+        $firstResponse = $responses->findByInvite((int) $invite['id']);
+        $this->assertNotNull($firstResponse);
+
+        // Second submit — same token, same valid data + valid csrf.
+        // Must return 200 (not 500), must NOT regression the state, must NOT create a second row.
+        $res2 = $ctrl->submit($invite['public_token'], [
+            'chosen_start' => '2026-02-15T20:00', 'meal_choice' => 'coffee',
+        ], $this->csrf->token());
+
+        $this->assertSame(200, $res2->status());
+
+        $reloadedAgain = $invites->findByToken($invite['public_token']);
+        $this->assertSame(InviteState::CONFIRMED, $reloadedAgain['status'], 'Status must not regress after double-submit');
+
+        // Only one response row must exist (findByInvite returns the original row).
+        $storedAgain = $responses->findByInvite((int) $invite['id']);
+        $this->assertSame($firstResponse['id'], $storedAgain['id'], 'No duplicate response row must be created');
+        $this->assertSame($firstResponse['chosen_start'], $storedAgain['chosen_start'], 'Original answer must be preserved');
+    }
 }

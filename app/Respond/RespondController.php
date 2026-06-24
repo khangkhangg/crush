@@ -82,6 +82,32 @@ final class RespondController
 
         $theme = $this->assigner->assignTo($invite);
 
+        $alreadyAnswered = [
+            InviteState::RESPONDED,
+            InviteState::PENDING_SENDER,
+            InviteState::CONFIRMED,
+            InviteState::DECLINED,
+        ];
+        if (in_array($invite['status'], $alreadyAnswered, true)) {
+            $existing = $this->responses->findByInvite((int) $invite['id']);
+            $when = null;
+            if ($existing !== null) {
+                try {
+                    $when = (new \DateTimeImmutable($existing['chosen_start']))->format('D, M j \a\t g:i A');
+                } catch (\Exception) {
+                    $when = $existing['chosen_start'];
+                }
+            }
+            return Response::html($this->view->render('respond/confirmed', [
+                'title'       => 'Your answer is in',
+                'theme'       => $theme,
+                'dateMode'    => $invite['date_mode'],
+                'reveal'      => $this->revealLabel($invite),
+                'wasAnonymous' => (int) $invite['is_anonymous'] === 1,
+                'when'        => $when ?? '—',
+            ]));
+        }
+
         if (!$this->csrf->validate($csrf)) {
             return $this->reshow($invite, $theme, 'Your session expired. Please try again.', 400);
         }
@@ -110,11 +136,12 @@ final class RespondController
         $this->events->log((int) $invite['id'], $theme, 'completed');
 
         return Response::html($this->view->render('respond/confirmed', [
-            'title'    => 'Your answer is in',
-            'theme'    => $theme,
-            'dateMode' => $invite['date_mode'],
-            'reveal'   => $this->revealLabel($invite),
-            'when'     => $start->format('D, M j \a\t g:i A'),
+            'title'       => 'Your answer is in',
+            'theme'       => $theme,
+            'dateMode'    => $invite['date_mode'],
+            'reveal'      => $this->revealLabel($invite),
+            'wasAnonymous' => (int) $invite['is_anonymous'] === 1,
+            'when'        => $start->format('D, M j \a\t g:i A'),
         ]));
     }
 
