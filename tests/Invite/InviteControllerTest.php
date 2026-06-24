@@ -16,6 +16,7 @@ use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
+use App\Share\ShareTargetRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
@@ -39,6 +40,7 @@ final class InviteControllerTest extends DatabaseTestCase
             new BlockRepo($this->pdo(), $this->clock),
             new InvitePlaceRepo($this->pdo()),
             new LinkResolver(new FakeFetcher([])),
+            new ShareTargetRepo($this->pdo()),
         );
     }
 

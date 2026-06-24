@@ -13,6 +13,7 @@ use App\Maps\LinkResolver;
 use App\Respond\MealOptions;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
+use App\Share\ShareTargetRepo;
 
 final class InviteController
 {
@@ -28,6 +29,7 @@ final class InviteController
         private BlockRepo $blocks,
         private InvitePlaceRepo $places,
         private LinkResolver $maps,
+        private ShareTargetRepo $share,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -145,10 +147,18 @@ final class InviteController
                 'appUrl'  => rtrim($this->appUrl, '/'),
             ]), 404);
         }
+        $link = rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'];
+        $shareLinks = array_map(fn(array $t): array => [
+            'label' => $t['label'],
+            'icon'  => $t['icon'],
+            'href'  => $this->share->render((string) $t['url_template'], $link),
+        ], $this->share->listEnabled());
+
         return Response::html($this->view->render('invite/created', [
-            'title'  => 'Invite ready',
-            'link'   => rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'],
-            'invite' => $invite,
+            'title'      => 'Invite ready',
+            'link'       => $link,
+            'invite'     => $invite,
+            'shareLinks' => $shareLinks,
         ]));
     }
 

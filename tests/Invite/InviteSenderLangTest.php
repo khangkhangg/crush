@@ -16,6 +16,7 @@ use App\Mail\Postman;
 use App\Maps\LinkResolver;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
+use App\Share\ShareTargetRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
@@ -34,7 +35,8 @@ final class InviteSenderLangTest extends DatabaseTestCase
         $ctrl = new InviteController(
             $view, $csrf, $invites, $users, $clock, 'http://localhost', $postman,
             new RateLimiter($this->pdo(), $clock), new BlockRepo($this->pdo(), $clock),
-            new InvitePlaceRepo($this->pdo()), new LinkResolver(new FakeFetcher([]))
+            new InvitePlaceRepo($this->pdo()), new LinkResolver(new FakeFetcher([])),
+            new ShareTargetRepo($this->pdo())
         );
 
         $sender = $users->create('sue@x.test', 'Sue', 'magic');

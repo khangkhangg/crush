@@ -39,6 +39,7 @@ use App\Reveal\RevealController;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 use App\Settings\SettingsRepo;
+use App\Share\ShareTargetRepo;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
 use App\Theme\ThemeRepo;
@@ -80,6 +81,7 @@ $inviteRepo      = new InviteRepo($pdo, $clock);
 $blockRepo       = new BlockRepo($pdo, $clock);
 $invitePlaceRepo = new InvitePlaceRepo($pdo);
 $linkResolver    = new LinkResolver(new CurlFetcher());
+$shareTargets    = new ShareTargetRepo($pdo);
 $blockCtrl  = new BlockController($view, $inviteRepo, $blockRepo);
 $inviteCtrl = new InviteController(
     $view, $csrf, $inviteRepo, $users, $clock,
@@ -89,6 +91,7 @@ $inviteCtrl = new InviteController(
     $blockRepo,
     $invitePlaceRepo,
     $linkResolver,
+    $shareTargets,
 );
 $currentUserId = static fn(): ?int => $session->userId();
 
