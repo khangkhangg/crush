@@ -41,6 +41,21 @@ final class LinkResolverTest extends TestCase
         $this->assertStringContainsString(rawurlencode('Blue Bottle Coffee'), $r['clean_url']);
     }
 
+    public function test_generic_google_maps_title_is_dropped_so_place_name_wins(): void
+    {
+        // The goo.gl interstitial often has og:title "Google Maps"; the real place
+        // comes from the /maps/place/ URL — the generic title must not win.
+        $fetcher = new FakeFetcher([
+            'https://maps.app.goo.gl/x' => [
+                'finalUrl' => 'https://www.google.com/maps/place/Octo+Tapas+Restobar/@10.77,106.70,15z',
+                'body'     => '<html><head><meta property="og:title" content="Google Maps"></head></html>',
+            ],
+        ]);
+        $r = (new LinkResolver($fetcher))->resolve('https://maps.app.goo.gl/x');
+        $this->assertNull($r['name']);                               // generic title dropped
+        $this->assertSame('Octo Tapas Restobar', $r['address']);     // place name from the URL
+    }
+
     public function test_disallowed_url_falls_back_to_raw(): void
     {
         $r = (new LinkResolver(new FakeFetcher([])))->resolve('https://evil.com/x');

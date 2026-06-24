@@ -50,15 +50,22 @@ final class LinkResolver
     private function parseName(string $html): ?string
     {
         if (preg_match('#<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']#i', $html, $m)) {
-            return html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8');
+            return $this->cleanTitle(html_entity_decode(trim($m[1]), ENT_QUOTES, 'UTF-8'));
         }
         if (preg_match('#<title>([^<]+)</title>#i', $html, $m)) {
             $title = trim($m[1]);
             // Strip a trailing " - Google Maps" suffix.
             $title = preg_replace('/\s*[-–]\s*Google Maps\s*$/i', '', $title);
-            return $title !== '' ? html_entity_decode($title, ENT_QUOTES, 'UTF-8') : null;
+            return $this->cleanTitle(html_entity_decode($title, ENT_QUOTES, 'UTF-8'));
         }
         return null;
+    }
+
+    /** Drop the generic interstitial title so a real place name (from the URL) wins. */
+    private function cleanTitle(string $title): ?string
+    {
+        $title = trim($title);
+        return ($title === '' || strtolower($title) === 'google maps') ? null : $title;
     }
 
     private function parseAddress(string $finalUrl): ?string
