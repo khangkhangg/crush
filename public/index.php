@@ -66,6 +66,8 @@ $auth = new AuthController(
     $view, $session, $csrf, $magic,
     $mailer,
     (string) $config->get('app_url', 'http://localhost'),
+    $users,
+    new RateLimiter($pdo, $clock),
 );
 
 $googleClientId     = (string) $config->get('google_client_id', '');

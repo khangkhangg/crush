@@ -65,7 +65,7 @@ final class LandingControllerTest extends DatabaseTestCase
         $session = new Session(new ArrayStore());
         $spy = new SpyMailer();
         $res = $this->controller($csrf, $session, $spy)
-            ->start(['name' => 'New', 'email' => 'new@x.test'], $csrf->token(), 'vi-VN,vi;q=0.9');
+            ->start(['name' => 'New', 'email' => 'new@x.test', 'password' => 'secret1'], $csrf->token(), 'vi-VN,vi;q=0.9');
 
         $this->assertSame(302, $res->status());
         $this->assertSame('/invites/new', $res->headers()['Location']);
@@ -74,7 +74,7 @@ final class LandingControllerTest extends DatabaseTestCase
         $this->assertSame('vi', $user['lang']);                    // detected + stored
         $this->assertCount(1, $spy->sent);                          // welcome email
         $this->assertSame('new@x.test', $spy->sent[0]->to);
-        $this->assertStringContainsString('Chao mung', $spy->sent[0]->subject); // vi welcome subject
+        $this->assertStringContainsString('Chào mừng', $spy->sent[0]->subject); // vi welcome subject (accented)
     }
 
     public function test_existing_email_logs_in_without_welcome(): void
@@ -84,7 +84,7 @@ final class LandingControllerTest extends DatabaseTestCase
         $session = new Session(new ArrayStore());
         $spy = new SpyMailer();
         $res = $this->controller($csrf, $session, $spy)
-            ->start(['name' => 'Dee', 'email' => 'dupe@x.test'], $csrf->token(), '');
+            ->start(['name' => 'Dee', 'email' => 'dupe@x.test', 'password' => 'secret1'], $csrf->token(), '');
 
         $this->assertSame(302, $res->status());
         $this->assertSame('/invites/new', $res->headers()['Location']);

@@ -27,6 +27,6 @@ final class CrushLangTest extends DatabaseTestCase
         $onboarder->onboard('crush@x.test', 'Cee', 'vi');
 
         $this->assertSame('vi', $users->findByEmail('crush@x.test')['lang']);
-        $this->assertStringContainsString('Chao mung', $spy->sent[0]->subject); // vi welcome
+        $this->assertStringContainsString('Chào mừng', $spy->sent[0]->subject); // vi welcome (accented)
     }
 }

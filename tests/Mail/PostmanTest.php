@@ -23,7 +23,7 @@ final class PostmanTest extends DatabaseTestCase
         $spy = new SpyMailer();
         $this->postman($spy)->sendWelcome('a@x.test', 'Ann', 'https://crush.app/auth/magic/t', 'vi');
         $this->assertCount(1, $spy->sent);
-        $this->assertStringContainsString('Chao mung', $spy->sent[0]->subject); // vi subject
+        $this->assertStringContainsString('Chào mừng', $spy->sent[0]->subject); // vi subject (accented)
         $this->assertStringContainsString('https://crush.app/auth/magic/t', $spy->sent[0]->html);
     }
 

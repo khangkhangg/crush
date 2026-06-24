@@ -33,7 +33,13 @@ return static function (
     $router->add('GET',  '/login',              static fn(): Response => $auth->showLogin(
         (static fn($v) => is_string($v) ? $v : null)($_GET['e'] ?? null)
     ));
-    $router->add('POST', '/login',              static fn(): Response => $auth->startMagic(
+    $router->add('POST', '/login', static fn(): Response => $auth->loginPassword(
+        is_string($_POST['email'] ?? null) ? $_POST['email'] : '',
+        is_string($_POST['password'] ?? null) ? $_POST['password'] : '',
+        is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : '',
+        (string) ($_SERVER['REMOTE_ADDR'] ?? '')
+    ));
+    $router->add('POST', '/login/magic', static fn(): Response => $auth->startMagic(
         is_string($_POST['email'] ?? null) ? $_POST['email'] : '',
         is_string($_POST['csrf']  ?? null) ? $_POST['csrf']  : ''
     ));
@@ -102,6 +108,9 @@ return static function (
         $currentUserId(), (static fn($v) => is_string($v) ? $v : '')($_GET['key'] ?? '')
     ));
     $router->add('POST', '/admin/share',      static fn(): Response => $admin->saveShare(
+        $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
+    ));
+    $router->add('POST', '/admin/share/new', static fn(): Response => $admin->createShare(
         $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
     ));
 

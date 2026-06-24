@@ -16,7 +16,38 @@ final class AuthController
         private MagicLink $magic,
         private \App\Mail\Mailer $mailer,
         private string $appUrl,
+        private UserRepo $users,
+        private \App\Security\RateLimiter $limits,
     ) {}
+
+    public function loginPassword(string $email, string $password, string $csrf, string $ip = ''): Response
+    {
+        if (!$this->csrf->validate($csrf)) {
+            return Response::html($this->view->render('auth/login', [
+                'csrf' => $this->csrf->token(), 'title' => 'Sign in',
+                'error' => 'Your session expired. Please try again.',
+            ]), 400);
+        }
+        $email = trim($email);
+        $okIp    = $this->limits->hit('login_ip', $ip, 10, 3600);
+        $okEmail = $this->limits->hit('login_email', strtolower($email), 5, 900);
+        if (!$okIp || !$okEmail) {
+            return Response::html($this->view->render('auth/login', [
+                'csrf' => $this->csrf->token(), 'title' => 'Sign in',
+                'error' => 'Too many attempts. Please wait and try again.',
+            ]), 429);
+        }
+        $user = $this->users->findByEmail($email);
+        $hash = $user !== null ? (string) ($user['password_hash'] ?? '') : '';
+        if ($user === null || $hash === '' || !password_verify($password, $hash)) {
+            return Response::html($this->view->render('auth/login', [
+                'csrf' => $this->csrf->token(), 'title' => 'Sign in',
+                'error' => 'Invalid email or password.',
+            ]), 401);
+        }
+        $this->session->login((int) $user['id']);
+        return (new Response('', 302))->withHeader('Location', '/invites');
+    }
 
     public function showLogin(?string $errorCode = null): Response
     {
