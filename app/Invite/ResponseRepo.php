@@ -10,6 +10,7 @@ final class ResponseRepo
     private const FIELDS = [
         'chosen_start', 'chosen_end', 'meal_choice', 'meal_wish', 'crush_contact',
         'pickup_raw', 'pickup_name', 'pickup_address', 'pickup_clean_url',
+        'chosen_place_id',
     ];
 
     public function __construct(private \PDO $pdo, private Clock $clock) {}

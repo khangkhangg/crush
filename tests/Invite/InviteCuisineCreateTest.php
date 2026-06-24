@@ -53,7 +53,7 @@ final class InviteCuisineCreateTest extends DatabaseTestCase
         $res = $this->controller($csrf)->showNew($uid);
         $this->assertSame(200, $res->status());
         $this->assertStringContainsString('card--wide', $res->body());
-        $this->assertStringContainsString('places[dinner][cuisine]', $res->body());
+        $this->assertStringContainsString('name="focus_vibe"', $res->body());
         $this->assertStringContainsString('<datalist id="cuisines"', $res->body());
     }
 
@@ -64,11 +64,13 @@ final class InviteCuisineCreateTest extends DatabaseTestCase
         $uid = (new UserRepo($this->pdo(), $this->clock))->create('u2@x.test', 'U', 'magic')['id'];
         $res = $this->controller($csrf)->create($uid, [
             'crush_email' => 'c@x.test', 'date_mode' => 'instant',
-            'places' => ['dinner' => ['name' => 'Tartine', 'cuisine' => 'Italian', 'url' => '']],
+            'place_mode' => 'focused', 'focus_vibe' => 'dinner',
+            'opts' => [['name' => 'Tartine', 'cuisine' => 'Italian', 'url' => '']],
         ], $csrf->token());
         $this->assertSame(302, $res->status());
 
         $invite = (new InviteRepo($this->pdo(), $this->clock))->listBySender($uid)[0];
-        $this->assertSame('Italian', $places->forMeal((int) $invite['id'], 'dinner')['cuisine']);
+        $grouped = $places->groupedForInvite((int) $invite['id']);
+        $this->assertSame('Italian', $grouped['dinner'][0]['cuisine']);
     }
 }

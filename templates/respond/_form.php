@@ -1,12 +1,30 @@
 <?php $error = $error ?? null; $meals = $meals ?? []; $places = $places ?? []; ?>
-<?php $collapseMeal = $collapseMeal ?? null; ?>
+<?php $collapseMeal = $collapseMeal ?? null; $focusVibe = $focusVibe ?? null; $focusOptions = $focusOptions ?? []; ?>
 <?php if ($error): ?><p class="rf-error" role="alert"><?= $e($error) ?></p><?php endif; ?>
 <form method="post" action="/i/<?= $e($token) ?>" class="rf-form">
   <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
   <label class="rf-field">Pick a day &amp; time
     <input type="datetime-local" name="chosen_start" required>
   </label>
-<?php if ($collapseMeal !== null):
+<?php if ($focusVibe !== null): ?>
+  <input type="hidden" name="meal_choice" value="<?= $e($focusVibe['key']) ?>">
+  <fieldset class="rf-meals">
+    <legend><?= $e($focusVibe['label']) ?> — pick a spot</legend>
+    <div class="rf-chips">
+      <?php foreach ($focusOptions as $opt):
+        $oname = $opt['place_resolved_name'] ?: $opt['place_name'];
+        $ocuisine = $opt['cuisine'] ?? ''; $omap = $opt['place_clean_url'] ?? ''; ?>
+        <label class="rf-chip">
+          <input type="radio" name="chosen_place" value="<?= $e($opt['id']) ?>">
+          <span><?= $e($oname) ?><?php if ($ocuisine !== ''): ?> · <?= $e($ocuisine) ?><?php endif; ?></span>
+          <?php if (is_string($omap) && str_starts_with((string) $omap, 'http')): ?>
+            <a href="<?= $e($omap) ?>" target="_blank" rel="noopener" style="font-size:11px;">map</a>
+          <?php endif; ?>
+        </label>
+      <?php endforeach; ?>
+    </div>
+  </fieldset>
+<?php elseif ($collapseMeal !== null):
         $cp = $places[$collapseMeal['key']] ?? null;
         $cspot = $cp ? ($cp['place_resolved_name'] ?: $cp['place_name']) : '';
         $ccuisine = $cp['cuisine'] ?? null; ?>

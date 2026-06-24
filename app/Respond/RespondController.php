@@ -121,6 +121,16 @@ final class RespondController
         $meal = (string) ($input['meal_choice'] ?? '');
         $meal = MealOptions::isValid($meal) ? $meal : null;
 
+        $chosenPlaceId = null;
+        $cp = (int) ($input['chosen_place'] ?? 0);
+        if ($cp > 0) {
+            foreach ($this->places->groupedForInvite((int) $invite['id']) as $rows) {
+                foreach ($rows as $row) {
+                    if ((int) $row['id'] === $cp) { $chosenPlaceId = $cp; break 2; }
+                }
+            }
+        }
+
         $pickupRaw = $this->clean($input['pickup_raw'] ?? null);
         $pickup = $this->maps->resolve((string) ($pickupRaw ?? ''));
         if ($pickupRaw === null && $meal !== null) {
@@ -144,6 +154,7 @@ final class RespondController
             'pickup_name'      => $pickup['name'],
             'pickup_address'   => $pickup['address'],
             'pickup_clean_url' => $pickup['clean_url'],
+            'chosen_place_id'  => $chosenPlaceId,
         ]);
 
         $final = $invite['date_mode'] === 'confirm' ? InviteState::PENDING_SENDER : InviteState::CONFIRMED;
@@ -216,13 +227,34 @@ final class RespondController
     private function renderInvite(array $invite, string $theme, ?string $error = null, int $status = 200): Response
     {
         $key = in_array($theme, self::THEME_TEMPLATES, true) ? $theme : 'bubblegum';
-        $placesByMeal = $this->places->forInvite((int) $invite['id']);
-        $curated = array_values(array_filter(
-            MealOptions::CHOICES,
-            static fn(array $m): bool => isset($placesByMeal[$m['key']])
+
+        $grouped = $this->places->groupedForInvite((int) $invite['id']);
+        $curatedKeys = array_values(array_filter(
+            array_map(static fn(array $m) => $m['key'], MealOptions::CHOICES),
+            static fn(string $k) => isset($grouped[$k])
         ));
-        $visibleMeals = $curated !== [] ? $curated : MealOptions::CHOICES;
-        $collapseMeal = count($visibleMeals) === 1 ? $visibleMeals[0] : null;
+        $focusVibe = null;
+        $focusOptions = [];
+        $collapseMeal = null;
+        $visibleMeals = MealOptions::CHOICES;
+        if (count($curatedKeys) === 1) {
+            $only = $curatedKeys[0];
+            if (count($grouped[$only]) >= 2) {
+                $focusVibe = $this->mealByKey($only);
+                $focusOptions = $grouped[$only];
+            } else {
+                $collapseMeal = $this->mealByKey($only);
+            }
+            $visibleMeals = [$this->mealByKey($only)];
+        } elseif (count($curatedKeys) >= 2) {
+            $visibleMeals = array_values(array_filter(MealOptions::CHOICES, static fn(array $m) => isset($grouped[$m['key']])));
+        }
+        // first-option-per-vibe map for the existing chip reveal:
+        $places = [];
+        foreach ($grouped as $k => $rows) {
+            $places[$k] = $rows[0];
+        }
+
         return Response::html($this->view->render('respond/themes/' . $key, [
             'title'        => 'You have an invite',
             'theme'        => $key,
@@ -231,10 +263,22 @@ final class RespondController
             'senderLabel'  => $this->senderLabel($invite),
             'message'      => $invite['message'],
             'meals'        => $visibleMeals,
-            'places'       => $placesByMeal,
+            'places'       => $places,
             'collapseMeal' => $collapseMeal,
+            'focusVibe'    => $focusVibe,
+            'focusOptions' => $focusOptions,
             'error'        => $error,
         ]), $status);
+    }
+
+    private function mealByKey(string $k): array
+    {
+        foreach (MealOptions::CHOICES as $m) {
+            if ($m['key'] === $k) {
+                return $m;
+            }
+        }
+        return ['key' => $k, 'label' => ucfirst($k), 'icon' => 'ic-utensils'];
     }
 
     private function isUnavailable(array $invite): bool
