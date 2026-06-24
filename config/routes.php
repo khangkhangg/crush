@@ -50,7 +50,12 @@ return static function (
 
     // Front door
     $router->add('GET',  '/', static fn(): Response => $landing->home($currentUserId()));
-    $router->add('POST', '/', static fn(): Response => $landing->start($_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('POST', '/', static fn(): Response => $landing->start(
+        $_POST,
+        (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? ''),
+        (string) ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
+    ));
+    $router->add('GET', '/switch', static fn(): Response => $landing->switchAccount());
     // Dashboard moves to /invites only (the old `GET /` -> dashboard line is removed)
     $router->add('GET',  '/invites',       static fn(): Response => $invite->dashboard($currentUserId()));
     $router->add('GET',  '/invites/new',   static fn(): Response => $invite->showNew($currentUserId()));
@@ -58,7 +63,11 @@ return static function (
     $router->add('GET',  '/i/{token}/created', static fn(string $token): Response => $invite->showCreated($currentUserId(), $token));
 
     $router->add('GET',  '/i/{token}', static fn(string $token): Response => $respond->open($token));
-    $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit($token, $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit(
+        $token, $_POST,
+        (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? ''),
+        (string) ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
+    ));
 
     $router->add('GET', '/unsubscribe/{token}', static fn(string $token): Response => $block->report($token));
 
