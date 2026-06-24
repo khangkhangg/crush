@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Auth;
 
+use App\Core\RegeneratesId;
 use App\Core\Store;
 
 final class Session
@@ -13,6 +14,9 @@ final class Session
 
     public function login(int $userId): void
     {
+        if ($this->store instanceof RegeneratesId) {
+            $this->store->regenerateId();
+        }
         $this->store->set(self::KEY, $userId);
     }
 

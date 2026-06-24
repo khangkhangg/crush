@@ -36,8 +36,12 @@ final class GoogleController
             return (new Response('', 302))->withHeader('Location', '/login?e=oauth');
         }
 
-        $user = $this->google->handleCallback($code);
-        $this->session->login((int) $user['id']);
+        try {
+            $user = $this->google->handleCallback($code);
+            $this->session->login((int) $user['id']);
+        } catch (\Throwable) {
+            return (new Response('', 302))->withHeader('Location', '/login?e=oauth');
+        }
         return (new Response('', 302))->withHeader('Location', '/');
     }
 }

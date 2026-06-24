@@ -22,7 +22,8 @@ use App\Core\View;
 /** @var Config $config */
 $config = require dirname(__DIR__) . '/config/config.php';
 
-$store   = new PhpSessionStore();
+$secure  = str_starts_with((string) $config->get('app_url', ''), 'https');
+$store   = new PhpSessionStore($secure);
 $session = new Session($store);
 $csrf    = new Csrf($store);
 $view    = new View(dirname(__DIR__) . '/templates');
