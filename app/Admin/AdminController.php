@@ -9,6 +9,7 @@ use App\Core\Response;
 use App\Core\View;
 use App\Invite\InviteRepo;
 use App\Mail\Email;
+use App\Mail\EmailTemplateRepo;
 use App\Mail\MailerFactory;
 use App\Security\BlockRepo;
 use App\Settings\SettingsRepo;
@@ -17,6 +18,13 @@ use App\Theme\ThemeRepo;
 
 final class AdminController
 {
+    private const TEMPLATE_PLACEHOLDERS = [
+        'welcome' => '{{name}} {{link}}',
+        'invite'  => '{{senderLabel}} {{message}} {{link}} {{unsubscribe}}',
+        'result'  => '{{crushName}} {{when}} {{meal}} {{place}} {{mapHref}}',
+        'magic'   => '{{link}}',
+    ];
+
     private const SETTING_KEYS = [
         'mail_driver', 'from_email', 'from_name',
         'resend_api_key', 'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_encryption',
@@ -34,6 +42,7 @@ final class AdminController
         private InviteRepo $invites,
         private BlockRepo $blocks,
         private string $appUrl,
+        private EmailTemplateRepo $emailTemplates,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -161,6 +170,57 @@ final class AdminController
             $flash = 'Test failed: ' . $e->getMessage();
         }
         return $this->settings($userId, $flash);
+    }
+
+    public function templates(?int $userId): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        return $this->render('admin/templates', [
+            'title' => 'Email templates', 'templates' => $this->emailTemplates->all(),
+        ]);
+    }
+
+    public function editTemplate(?int $userId, string $key, string $lang): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        $row = $this->emailTemplates->getExact($key, $lang);
+        if ($row === null) {
+            return $this->render('admin/templates', [
+                'title' => 'Email templates', 'templates' => $this->emailTemplates->all(),
+                'flash' => 'Unknown template.',
+            ]);
+        }
+        return $this->render('admin/template_edit', [
+            'title'       => 'Edit template',
+            'csrf'        => $this->csrf->token(),
+            'tpl'         => $row,
+            'placeholders'=> self::TEMPLATE_PLACEHOLDERS[$key] ?? '',
+        ]);
+    }
+
+    public function saveTemplate(?int $userId, array $input, string $csrf): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        if (!$this->csrf->validate($csrf)) {
+            return $this->render('admin/templates', [
+                'title' => 'Email templates', 'templates' => $this->emailTemplates->all(),
+                'flash' => 'Session expired, please retry.',
+            ])->withStatus(400);
+        }
+        $key = (string) ($input['key'] ?? '');
+        $lang = (string) ($input['lang'] ?? '');
+        $subject = (string) ($input['subject'] ?? '');
+        $body = (string) ($input['body_html'] ?? '');
+        if ($key !== '' && $lang !== '') {
+            $this->emailTemplates->update($key, $lang, $subject, $body);
+        }
+        return (new Response('', 302))->withHeader('Location', '/admin/templates');
     }
 
     private function requireAdmin(?int $userId): ?array
