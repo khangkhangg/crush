@@ -74,6 +74,11 @@ final class UserRepo
         $this->pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?')->execute([$hash, $id]);
     }
 
+    public function setLang(int $id, string $lang): void
+    {
+        $this->pdo->prepare('UPDATE users SET lang = ? WHERE id = ?')->execute([$lang, $id]);
+    }
+
     public static function isProfileComplete(array $user): bool
     {
         return isset($user['profile_completed_at']) && $user['profile_completed_at'] !== '';
