@@ -20,6 +20,8 @@ use App\Respond\CrushOnboarder;
 
 final class RespondController
 {
+    private const THEME_TEMPLATES = ['love-letter', 'bubblegum', 'midnight'];
+
     public function __construct(
         private View $view,
         private Csrf $csrf,
@@ -59,18 +61,7 @@ final class RespondController
             $this->events->log((int) $invite['id'], $theme, 'opened');
         }
 
-        return Response::html($this->view->render('respond/show', [
-            'title'       => 'You have an invite',
-            'theme'       => $theme,
-            'csrf'        => $this->csrf->token(),
-            'token'       => $invite['public_token'],
-            'senderLabel' => $this->senderLabel($invite),
-            'message'     => $invite['message'],
-            'dateMode'    => $invite['date_mode'],
-            'options'     => $this->invites->dateOptions((int) $invite['id']),
-            'meals'       => MealOptions::CHOICES,
-            'places'      => $this->places->forInvite((int) $invite['id']),
-        ]));
+        return $this->renderInvite($invite, $theme);
     }
 
     public function submit(string $token, array $input, string $csrf): Response
@@ -219,13 +210,24 @@ final class RespondController
 
     private function reshow(array $invite, string $theme, string $error, int $status): Response
     {
-        return Response::html($this->view->render('respond/show', [
-            'title' => 'You have an invite', 'theme' => $theme,
-            'csrf' => $this->csrf->token(), 'token' => $invite['public_token'],
-            'senderLabel' => $this->senderLabel($invite), 'message' => $invite['message'],
-            'dateMode' => $invite['date_mode'],
-            'options' => $this->invites->dateOptions((int) $invite['id']),
-            'meals' => MealOptions::CHOICES, 'error' => $error,
+        return $this->renderInvite($invite, $theme, $error, $status);
+    }
+
+    private function renderInvite(array $invite, string $theme, ?string $error = null, int $status = 200): Response
+    {
+        $key = in_array($theme, self::THEME_TEMPLATES, true) ? $theme : 'bubblegum';
+        return Response::html($this->view->render('respond/themes/' . $key, [
+            'title'       => 'You have an invite',
+            'theme'       => $key,
+            'csrf'        => $this->csrf->token(),
+            'token'       => $invite['public_token'],
+            'senderLabel' => $this->senderLabel($invite),
+            'message'     => $invite['message'],
+            'dateMode'    => $invite['date_mode'],
+            'options'     => $this->invites->dateOptions((int) $invite['id']),
+            'meals'       => MealOptions::CHOICES,
+            'places'      => $this->places->forInvite((int) $invite['id']),
+            'error'       => $error,
         ]), $status);
     }
 
