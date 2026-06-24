@@ -37,6 +37,8 @@ final class IcsBuilderTest extends TestCase
         $this->assertStringContainsString("DESCRIPTION:Dinner\\; sushi", $ics);
         $this->assertStringContainsString("BEGIN:VALARM", $ics);
         $this->assertStringContainsString("TRIGGER:-PT1H", $ics);
+        // ACTION:DISPLAY requires a DESCRIPTION per RFC 5545 §3.6.6.
+        $this->assertStringContainsString("DESCRIPTION:Reminder", $ics);
         $this->assertStringContainsString("\r\n", $ics);
     }
 
@@ -48,6 +50,8 @@ final class IcsBuilderTest extends TestCase
             'location' => null, 'description' => null,
         ]);
         $this->assertStringNotContainsString("LOCATION:", $ics);
-        $this->assertStringNotContainsString("DESCRIPTION:", $ics);
+        // No event-level DESCRIPTION; only the VALARM's "DESCRIPTION:Reminder" remains.
+        $this->assertSame(1, substr_count($ics, 'DESCRIPTION:'));
+        $this->assertStringNotContainsString("DESCRIPTION:S", $ics);
     }
 }

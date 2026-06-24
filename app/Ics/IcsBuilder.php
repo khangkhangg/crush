@@ -36,6 +36,7 @@ final class IcsBuilder
             'BEGIN:VALARM',
             'TRIGGER:-PT1H',
             'ACTION:DISPLAY',
+            'DESCRIPTION:Reminder',
             'END:VALARM',
             'END:VEVENT',
             'END:VCALENDAR',
