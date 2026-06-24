@@ -10,6 +10,7 @@ use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InvitePlaceRepo;
+use App\Mail\EmailTemplateRepo;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
 use App\Mail\Postman;
@@ -34,7 +35,7 @@ final class MailWiringTest extends DatabaseTestCase
         $invites = new InviteRepo($this->pdo(), $clock);
         $users   = new UserRepo($this->pdo(), $clock);
         $spy = new SpyMailer();
-        $postman = new Postman($spy, new IcsBuilder($clock), $view, 'https://crush.app');
+        $postman = new Postman($spy, new IcsBuilder($clock), new EmailTemplateRepo($this->pdo()), 'https://crush.app');
 
         $ctrl = new RespondController(
             $view, $csrf, $invites, new ResponseRepo($this->pdo(), $clock), $users,

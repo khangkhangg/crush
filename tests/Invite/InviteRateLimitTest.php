@@ -9,6 +9,7 @@ use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
+use App\Mail\EmailTemplateRepo;
 use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Mail\Postman;
@@ -29,7 +30,7 @@ final class InviteRateLimitTest extends DatabaseTestCase
         $view  = new View(\dirname(__DIR__, 2) . '/templates');
         $invites = new InviteRepo($this->pdo(), $clock);
         $users   = new UserRepo($this->pdo(), $clock);
-        $postman = new Postman(new SpyMailer(), new IcsBuilder($clock), $view, 'http://localhost');
+        $postman = new Postman(new SpyMailer(), new IcsBuilder($clock), new EmailTemplateRepo($this->pdo()), 'http://localhost');
         $limiter = new RateLimiter($this->pdo(), $clock);
         $ctrl = new InviteController($view, $csrf, $invites, $users, $clock, 'http://localhost', $postman, $limiter, new BlockRepo($this->pdo(), $clock), new InvitePlaceRepo($this->pdo()), new LinkResolver(new FakeFetcher([])));
 

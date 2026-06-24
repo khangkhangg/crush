@@ -7,6 +7,7 @@ use App\Auth\MagicLink;
 use App\Auth\UserRepo;
 use App\Core\View;
 use App\Ics\IcsBuilder;
+use App\Mail\EmailTemplateRepo;
 use App\Mail\Postman;
 use App\Respond\CrushOnboarder;
 use Tests\Support\DatabaseTestCase;
@@ -27,7 +28,7 @@ final class CrushOnboarderTest extends DatabaseTestCase
     {
         $users = new UserRepo($this->pdo(), $this->clock);
         $magic = new MagicLink($this->pdo(), $users, $this->clock, 900);
-        $postman = new Postman($spy, new IcsBuilder($this->clock), new View(\dirname(__DIR__, 2) . '/templates'), 'https://crush.app');
+        $postman = new Postman($spy, new IcsBuilder($this->clock), new EmailTemplateRepo($this->pdo()), 'https://crush.app');
         return new CrushOnboarder($users, $magic, $postman, 'https://crush.app');
     }
 
