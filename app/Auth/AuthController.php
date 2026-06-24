@@ -18,11 +18,16 @@ final class AuthController
         private string $appUrl,
     ) {}
 
-    public function showLogin(): Response
+    public function showLogin(?string $errorCode = null): Response
     {
+        $errors = [
+            'google' => 'Google sign-in is not set up yet. Try a magic link instead.',
+            'oauth'  => 'Google sign-in could not be completed. Please try again.',
+        ];
         return Response::html($this->view->render('auth/login', [
             'csrf'  => $this->csrf->token(),
             'title' => 'Sign in',
+            'error' => $errors[$errorCode] ?? null,
         ]));
     }
 

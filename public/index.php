@@ -4,6 +4,9 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 use App\Auth\AuthController;
+use App\Auth\GoogleAuth;
+use App\Auth\GoogleController;
+use App\Auth\GoogleProvider;
 use App\Auth\MagicLink;
 use App\Auth\Session;
 use App\Auth\UserRepo;
@@ -34,8 +37,17 @@ $auth = new AuthController(
     (string) $config->get('app_url', 'http://localhost'),
 );
 
+$googleClientId     = (string) $config->get('google_client_id', '');
+$googleClientSecret = (string) $config->get('google_client_secret', '');
+$googleRedirect     = (string) $config->get('google_redirect_uri', '')
+    ?: rtrim((string) $config->get('app_url', 'http://localhost'), '/') . '/auth/google/callback';
+
+$googleProvider = new GoogleProvider($googleClientId, $googleClientSecret, $googleRedirect);
+$googleAuth     = new GoogleAuth($googleProvider, $users);
+$googleCtrl     = new GoogleController($googleAuth, $session, $store, $googleClientId !== '');
+
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
