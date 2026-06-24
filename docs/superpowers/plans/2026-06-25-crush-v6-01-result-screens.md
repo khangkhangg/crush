@@ -297,7 +297,7 @@ git commit -m "feat(dashboard): card layout with status badges + copy/view actio
 - Modify: `app/Reveal/RevealController.php`, `templates/reveal/response.php`
 - Test: `tests/Reveal/RevealDetailTest.php`
 
-**Interfaces:** `RevealController::render` also passes `appUrl` (for the reshare link). `reveal/response.php` in the `reveal` state adds: a **status timeline** (Sent → Answered → Confirmed, derived from `invite['created_at']`, `response['created_at']`, and `invite['status']`), a **who** line (crush name/email + whether sent anonymously / revealed), the existing full answer with a **map link** for pickup, the calendar button, and a **reshare** (copy link) control.
+**Interfaces:** No controller change. `reveal/response.php` in the `reveal` state adds: a **status timeline** (Sent → Answered → Confirmed, derived from `invite['created_at']`, `response['created_at']`, and `invite['status']`), a **who** line (crush name/email + whether sent anonymously / revealed), the existing full answer with a **map link** for pickup, the calendar button, and a **reshare** (copy link) control whose URL is built client-side from `location.origin + '/i/' + token` (so no `appUrl` dependency).
 
 - [ ] **Step 1: Write the failing test** — `tests/Reveal/RevealDetailTest.php`
 
@@ -332,6 +332,7 @@ final class RevealDetailTest extends TestCase
         $this->assertStringContainsString('Mia', $html);                          // who
         $this->assertStringContainsString('/invites/tok9/calendar', $html);       // calendar
         $this->assertStringContainsString('iv-reshare', $html);                   // reshare control
+        $this->assertStringContainsString('data-token="tok9"', $html);            // reshare token (URL built client-side)
         $this->assertStringContainsString('https://www.google.com/maps', $html);  // map link
     }
 }
@@ -340,13 +341,10 @@ final class RevealDetailTest extends TestCase
 - [ ] **Step 2: Run to verify it fails** — Run: `vendor/bin/phpunit --filter RevealDetailTest`
 Expected: FAIL — no timeline/who/reshare.
 
-- [ ] **Step 3: Pass `appUrl` from `RevealController::render`** — add `'appUrl' => rtrim($this->appUrl, '/')` to the render data array. (`RevealController` already has `$this->appUrl`; if not, add it from the constructor — confirm and use the existing field. If there is genuinely no appUrl on the controller, pass `''` and the template still renders, but prefer the real one.)
-
-- [ ] **Step 4: Enrich the `reveal` branch of `templates/reveal/response.php`** — replace the `else /* reveal */` block with:
+- [ ] **Step 3: Enrich the `reveal` branch of `templates/reveal/response.php`** — no controller change (the reshare URL is built client-side). Replace the `else /* reveal */` block with:
 
 ```php
   <?php else: /* reveal */
-    $appUrl = $appUrl ?? '';
     $anon = (int) ($invite['is_anonymous'] ?? 0) === 1;
     $place = trim((string) (($response['pickup_name'] ?? '') . ' ' . ($response['pickup_address'] ?? '')));
     $mapHref = $response['pickup_clean_url'] ?? '';
@@ -381,14 +379,15 @@ Expected: FAIL — no timeline/who/reshare.
     </ul>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
       <a href="/invites/<?= $e($invite['public_token']) ?>/calendar" style="padding:12px 18px;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;text-decoration:none;">Download calendar invite</a>
-      <button type="button" class="iv-reshare" data-link="<?= $e(rtrim((string) $appUrl, '/') . '/i/' . $invite['public_token']) ?>"
+      <button type="button" class="iv-reshare" data-token="<?= $e($invite['public_token']) ?>"
               style="padding:12px 18px;border-radius:14px;border:1px solid #e7d4ff;background:#fff;color:#5a2a52;font-weight:600;cursor:pointer;">Copy link</button>
     </div>
     <script>
     document.querySelectorAll('.iv-reshare').forEach(function(b){
       b.addEventListener('click', function(){
-        var t = b.getAttribute('data-link');
-        if (navigator.clipboard && t) navigator.clipboard.writeText(t).then(function(){
+        var t = b.getAttribute('data-token');
+        var url = location.origin + '/i/' + t;
+        if (navigator.clipboard && t) navigator.clipboard.writeText(url).then(function(){
           var o = b.textContent; b.textContent = 'Copied!'; setTimeout(function(){ b.textContent = o; }, 1500);
         });
       });
@@ -397,13 +396,13 @@ Expected: FAIL — no timeline/who/reshare.
   <?php endif;
 ```
 
-- [ ] **Step 5: Run the test, then the full suite (serially)** — Run: `vendor/bin/phpunit --filter RevealDetailTest` then `vendor/bin/phpunit`
+- [ ] **Step 4: Run the test, then the full suite (serially)** — Run: `vendor/bin/phpunit --filter RevealDetailTest` then `vendor/bin/phpunit`
 Expected: all green (existing reveal tests still pass — the answer fields are unchanged, only additive markup).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add app/Reveal/RevealController.php templates/reveal/response.php tests/Reveal/RevealDetailTest.php
+git add templates/reveal/response.php tests/Reveal/RevealDetailTest.php
 git commit -m "feat(reveal): detail view with status timeline, who, map link, reshare"
 ```
 
