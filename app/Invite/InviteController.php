@@ -9,6 +9,7 @@ use App\Core\Csrf;
 use App\Core\Response;
 use App\Core\View;
 use App\Mail\Postman;
+use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 
 final class InviteController
@@ -22,6 +23,7 @@ final class InviteController
         private string $appUrl,
         private Postman $postman,
         private RateLimiter $limits,
+        private BlockRepo $blocks,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -65,6 +67,10 @@ final class InviteController
         if (!$this->limits->hit('invites_per_email', strtolower($email), 3, 86400)
             || !$this->limits->hit('invites_per_sender', (string) $userId, 20, 86400)) {
             return $this->renderForm('You have sent too many invites for now. Please try again later.', $input, 429);
+        }
+
+        if ($this->blocks->isBlocked($userId, $email)) {
+            return $this->renderForm('This person has asked not to receive invites.', $input, 403);
         }
 
         $invite = $this->invites->create([

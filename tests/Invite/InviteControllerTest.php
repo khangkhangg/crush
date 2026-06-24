@@ -11,6 +11,7 @@ use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
 use App\Mail\Postman;
+use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
@@ -30,7 +31,8 @@ final class InviteControllerTest extends DatabaseTestCase
             new UserRepo($this->pdo(), $this->clock),
             $this->clock, 'http://localhost',
             new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost'),
-            new RateLimiter($this->pdo(), $this->clock)
+            new RateLimiter($this->pdo(), $this->clock),
+            new BlockRepo($this->pdo(), $this->clock),
         );
     }
 

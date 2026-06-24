@@ -11,6 +11,7 @@ use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
 use App\Mail\Postman;
+use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
@@ -27,7 +28,7 @@ final class InviteRateLimitTest extends DatabaseTestCase
         $users   = new UserRepo($this->pdo(), $clock);
         $postman = new Postman(new SpyMailer(), new IcsBuilder($clock), $view, 'http://localhost');
         $limiter = new RateLimiter($this->pdo(), $clock);
-        $ctrl = new InviteController($view, $csrf, $invites, $users, $clock, 'http://localhost', $postman, $limiter);
+        $ctrl = new InviteController($view, $csrf, $invites, $users, $clock, 'http://localhost', $postman, $limiter, new BlockRepo($this->pdo(), $clock));
 
         $sender = $users->create('s@x.test', 'Sue', 'magic')['id'];
         $data = ['crush_email' => 'crush@x.test', 'date_mode' => 'instant'];

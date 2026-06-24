@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Admin\BlockController;
 use App\Auth\AuthController;
 use App\Auth\GoogleController;
 use App\Core\Response;
@@ -14,7 +15,8 @@ return static function (
     GoogleController $google,
     InviteController $invite,
     callable $currentUserId,
-    RespondController $respond
+    RespondController $respond,
+    BlockController $block,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -44,4 +46,6 @@ return static function (
 
     $router->add('GET',  '/i/{token}', static fn(string $token): Response => $respond->open($token));
     $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit($token, $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+
+    $router->add('GET', '/unsubscribe/{token}', static fn(string $token): Response => $block->report($token));
 };
