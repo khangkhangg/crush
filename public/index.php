@@ -30,6 +30,7 @@ use App\Mail\Postman;
 use App\Maps\CurlFetcher;
 use App\Maps\LinkResolver;
 use App\Profile\ProfileController;
+use App\Respond\CrushOnboarder;
 use App\Respond\RespondController;
 use App\Reveal\RevealController;
 use App\Security\BlockRepo;
@@ -88,8 +89,9 @@ $themeRepo    = new ThemeRepo($pdo);
 $abEvents     = new AbEventRepo($pdo, $clock);
 $assigner     = new ABAssigner($themeRepo, $inviteRepo);
 $linkResolver = new LinkResolver(new CurlFetcher());
+$crushOnboarder = new CrushOnboarder($users, $magic, $postman, (string) $config->get('app_url', 'http://localhost'));
 $respondCtrl  = new RespondController(
-    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman
+    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman, $crushOnboarder
 );
 
 $adminCtrl   = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'));
