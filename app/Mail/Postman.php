@@ -69,6 +69,15 @@ final class Postman
         ));
     }
 
+    public function sendWelcome(string $email, ?string $name, string $loginLink): bool
+    {
+        $html = $this->view->render('email/welcome', [
+            'name' => $name,
+            'link' => $loginLink,
+        ]);
+        return $this->dispatch(new Email($email, 'Welcome to Crush', $html));
+    }
+
     public static function safeHref(?string $url): ?string
     {
         if ($url === null) {
