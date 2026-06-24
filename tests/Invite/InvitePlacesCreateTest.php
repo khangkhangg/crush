@@ -9,6 +9,7 @@ use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
+use App\Mail\EmailTemplateRepo;
 use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Mail\Postman;
@@ -36,7 +37,7 @@ final class InvitePlacesCreateTest extends DatabaseTestCase
         $view = new View(\dirname(__DIR__, 2) . '/templates');
         $invites = new InviteRepo($this->pdo(), $this->clock);
         $users = new UserRepo($this->pdo(), $this->clock);
-        $postman = new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost');
+        $postman = new Postman(new SpyMailer(), new IcsBuilder($this->clock), new EmailTemplateRepo($this->pdo()), 'http://localhost');
         $placeRepo = new InvitePlaceRepo($this->pdo());
         $fetcher = new FakeFetcher([
             'https://maps.app.goo.gl/dinner' => [

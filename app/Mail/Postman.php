@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Core\View;
 use App\Ics\IcsBuilder;
 
 final class Postman
@@ -11,71 +10,67 @@ final class Postman
     public function __construct(
         private Mailer $mailer,
         private IcsBuilder $ics,
-        private View $view,
+        private EmailTemplateRepo $templates,
         private string $appUrl,
     ) {}
 
+    public function sendWelcome(string $email, ?string $name, string $loginLink, string $lang = 'en'): bool
+    {
+        return $this->dispatchTemplate($email, 'welcome', $lang, [
+            'name' => $name ?? '',
+            'link' => $loginLink,
+        ]);
+    }
+
+    public function sendMagic(string $email, string $loginLink, string $lang = 'en'): bool
+    {
+        return $this->dispatchTemplate($email, 'magic', $lang, ['link' => $loginLink]);
+    }
+
     public function sendInvite(array $invite): bool
     {
-        $senderLabel = (int) ($invite['is_anonymous'] ?? 0) === 1 ? 'a secret admirer' : 'someone';
-        $html = $this->view->render('email/invite', [
-            'senderLabel' => $senderLabel,
-            'message'     => $invite['message'] ?? null,
-            'link'        => rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'],
-            'theme'       => $invite['theme_key'] ?? 'bubblegum',
-            'unsubscribe' => rtrim($this->appUrl, '/') . '/unsubscribe/' . $invite['public_token'],
+        $base = rtrim($this->appUrl, '/');
+        return $this->dispatchTemplate((string) $invite['crush_email'], 'invite', (string) ($invite['lang'] ?? 'en'), [
+            'senderLabel' => (int) ($invite['is_anonymous'] ?? 0) === 1 ? 'a secret admirer' : 'someone',
+            'message'     => (string) ($invite['message'] ?? ''),
+            'link'        => $base . '/i/' . $invite['public_token'],
+            'unsubscribe' => $base . '/unsubscribe/' . $invite['public_token'],
         ]);
-        return $this->dispatch(new Email(
-            (string) $invite['crush_email'],
-            'You have a crush invite',
-            $html
-        ));
     }
 
     public function sendResult(array $invite, array $response, array $sender): bool
     {
-        $crushName = $invite['crush_name'] ?: 'your crush';
+        $crush = $invite['crush_name'] ?: 'your crush';
+        $place = trim((string) (($response['pickup_name'] ?? '') . ' ' . ($response['pickup_address'] ?? '')));
         $descParts = array_filter([
             $response['meal_choice'] ?? null,
             !empty($response['meal_wish']) ? 'wish: ' . $response['meal_wish'] : null,
             !empty($response['crush_contact']) ? 'contact: ' . $response['crush_contact'] : null,
         ]);
-        $location = trim(implode(', ', array_filter([
-            $response['pickup_name'] ?? null,
-            $response['pickup_address'] ?? null,
-        ])));
 
         $ics = $this->ics->build([
             'uid'         => $invite['public_token'] . '@crush',
-            'summary'     => 'Date with ' . $crushName,
+            'summary'     => 'Date with ' . $crush,
             'start'       => (string) $response['chosen_start'],
             'end'         => (string) $response['chosen_end'],
-            'location'    => $location !== '' ? $location : null,
+            'location'    => $place !== '' ? $place : null,
             'description' => $descParts !== [] ? implode('; ', $descParts) : null,
         ]);
 
-        $html = $this->view->render('email/result', [
-            'crushName' => $crushName,
-            'response'  => $response,
-            'mapHref'   => self::safeHref($response['pickup_clean_url'] ?? null),
-            'location'  => $location,
+        $rendered = $this->templates->render('result', (string) ($sender['lang'] ?? 'en'), [
+            'crushName' => $crush,
+            'when'      => (string) ($response['chosen_start'] ?? ''),
+            'meal'      => (string) ($response['meal_choice'] ?? ''),
+            'place'     => $place,
+            'mapHref'   => self::safeHref($response['pickup_clean_url'] ?? null) ?? '',
         ]);
 
         return $this->dispatch(new Email(
             (string) $sender['email'],
-            $crushName . ' answered your invite',
-            $html,
+            $rendered['subject'],
+            $rendered['html'],
             [['filename' => 'Date.ics', 'mime' => 'text/calendar', 'content' => $ics]]
         ));
-    }
-
-    public function sendWelcome(string $email, ?string $name, string $loginLink): bool
-    {
-        $html = $this->view->render('email/welcome', [
-            'name' => $name,
-            'link' => $loginLink,
-        ]);
-        return $this->dispatch(new Email($email, 'Welcome to Crush', $html));
     }
 
     public static function safeHref(?string $url): ?string
@@ -85,6 +80,17 @@ final class Postman
         }
         $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
         return ($scheme === 'http' || $scheme === 'https') ? $url : null;
+    }
+
+    private function dispatchTemplate(string $to, string $key, string $lang, array $vars): bool
+    {
+        try {
+            $rendered = $this->templates->render($key, $lang, $vars);
+        } catch (\Throwable $e) {
+            error_log('Crush template render failed: ' . $e->getMessage());
+            return false;
+        }
+        return $this->dispatch(new Email($to, $rendered['subject'], $rendered['html']));
     }
 
     private function dispatch(Email $email): bool

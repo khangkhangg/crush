@@ -27,6 +27,7 @@ use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Landing\LandingController;
 use App\Invite\ResponseRepo;
+use App\Mail\EmailTemplateRepo;
 use App\Mail\MailerFactory;
 use App\Mail\Postman;
 use App\Maps\CurlFetcher;
@@ -55,9 +56,10 @@ $pdo     = DB::connect($config);
 $users   = new UserRepo($pdo, $clock);
 $magic   = new MagicLink($pdo, $users, $clock);
 
-$settings = new SettingsRepo($pdo);
-$mailer   = MailerFactory::make($settings);
-$postman  = new Postman($mailer, new IcsBuilder($clock), $view, (string) $config->get('app_url', 'http://localhost'));
+$settings      = new SettingsRepo($pdo);
+$mailer        = MailerFactory::make($settings);
+$emailTemplates = new EmailTemplateRepo($pdo);
+$postman  = new Postman($mailer, new IcsBuilder($clock), $emailTemplates, (string) $config->get('app_url', 'http://localhost'));
 
 $auth = new AuthController(
     $view, $session, $csrf, $magic,
