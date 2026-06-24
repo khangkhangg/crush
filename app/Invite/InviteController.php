@@ -9,6 +9,7 @@ use App\Core\Csrf;
 use App\Core\Response;
 use App\Core\View;
 use App\Mail\Postman;
+use App\Security\RateLimiter;
 
 final class InviteController
 {
@@ -20,6 +21,7 @@ final class InviteController
         private Clock $clock,
         private string $appUrl,
         private Postman $postman,
+        private RateLimiter $limits,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -57,6 +59,12 @@ final class InviteController
         }
 
         $dateMode = ($input['date_mode'] ?? 'instant') === 'confirm' ? 'confirm' : 'instant';
+
+        $okSender = $this->limits->hit('invites_per_sender', (string) $userId, 20, 86400);
+        $okEmail  = $this->limits->hit('invites_per_email', strtolower($email), 3, 86400);
+        if (!$okSender || !$okEmail) {
+            return $this->renderForm('You have sent too many invites for now. Please try again later.', $input, 429);
+        }
 
         $invite = $this->invites->create([
             'sender_id'          => $userId,
