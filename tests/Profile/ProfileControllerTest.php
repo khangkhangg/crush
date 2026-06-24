@@ -1,0 +1,80 @@
+<?php
+declare(strict_types=1);
+
+namespace Tests\Profile;
+
+use App\Auth\UserRepo;
+use App\Core\ArrayStore;
+use App\Core\Csrf;
+use App\Core\View;
+use App\Profile\Avatars;
+use App\Profile\ProfileController;
+use Tests\Support\DatabaseTestCase;
+use Tests\Support\FrozenClock;
+
+final class ProfileControllerTest extends DatabaseTestCase
+{
+    private FrozenClock $clock;
+
+    private function controller(Csrf $csrf): ProfileController
+    {
+        $this->clock = new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
+        $view = new View(\dirname(__DIR__, 2) . '/templates');
+        return new ProfileController($view, $csrf, new UserRepo($this->pdo(), $this->clock));
+    }
+
+    private function user(): int
+    {
+        $c = new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
+        return (new UserRepo($this->pdo(), $c))->create('me@x.test', 'Me', 'magic')['id'];
+    }
+
+    public function test_edit_redirects_when_logged_out(): void
+    {
+        $res = $this->controller(new Csrf(new ArrayStore()))->edit(null);
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/login', $res->headers()['Location']);
+    }
+
+    public function test_edit_renders_form_with_csrf_and_avatars(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $res = $this->controller($csrf)->edit($this->user());
+        $this->assertSame(200, $res->status());
+        $this->assertStringContainsString($csrf->token(), $res->body());
+        $this->assertStringContainsString('name="avatar_key"', $res->body());
+    }
+
+    public function test_save_rejects_bad_csrf(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $res = $this->controller($csrf)->save($this->user(), ['avatar_key' => Avatars::default()], 'wrong');
+        $this->assertSame(400, $res->status());
+    }
+
+    public function test_save_persists_profile_and_redirects(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $ctrl = $this->controller($csrf);
+        $id = $this->user();
+        $res = $ctrl->save($id, [
+            'avatar_key' => Avatars::keys()[1] ?? Avatars::default(),
+            'pronouns' => 'they/them', 'bio' => 'hi', 'contact' => '@me',
+        ], $csrf->token());
+
+        $this->assertSame(302, $res->status());
+        $reloaded = (new UserRepo($this->pdo(), $this->clock))->findById($id);
+        $this->assertTrue(UserRepo::isProfileComplete($reloaded));
+        $this->assertSame('they/them', $reloaded['pronouns']);
+    }
+
+    public function test_save_coerces_invalid_avatar_to_default(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $ctrl = $this->controller($csrf);
+        $id = $this->user();
+        $ctrl->save($id, ['avatar_key' => 'bogus', 'bio' => ''], $csrf->token());
+        $reloaded = (new UserRepo($this->pdo(), $this->clock))->findById($id);
+        $this->assertSame(Avatars::default(), $reloaded['avatar_key']);
+    }
+}
