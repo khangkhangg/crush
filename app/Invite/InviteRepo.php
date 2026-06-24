@@ -15,8 +15,8 @@ final class InviteRepo
         $stmt = $this->pdo->prepare(
             'INSERT INTO invites
              (public_token, sender_id, crush_email, crush_name, is_anonymous,
-              reveal_on_response, date_mode, status, theme_key, message, created_at, expires_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              reveal_on_response, date_mode, status, theme_key, message, lang, created_at, expires_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             $token,
@@ -29,6 +29,7 @@ final class InviteRepo
             $data['status'] ?? InviteState::SENT,
             $data['theme_key'] ?? null,
             $data['message'] ?? null,
+            $data['lang'] ?? null,
             $this->clock->now()->format('Y-m-d H:i:s'),
             $data['expires_at'],
         ]);
