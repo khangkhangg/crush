@@ -12,6 +12,7 @@ use App\Invite\InviteRepo;
 use App\Mail\EmailTemplateRepo;
 use App\Security\BlockRepo;
 use App\Settings\SettingsRepo;
+use App\Share\ShareTargetRepo;
 use App\Theme\AbEventRepo;
 use App\Theme\ThemeRepo;
 use Tests\Support\DatabaseTestCase;
@@ -34,7 +35,8 @@ final class AdminAuthTest extends DatabaseTestCase
             new InviteRepo($this->pdo(), $this->clock),
             new BlockRepo($this->pdo(), $this->clock),
             'http://localhost',
-            new EmailTemplateRepo($this->pdo())
+            new EmailTemplateRepo($this->pdo()),
+            new ShareTargetRepo($this->pdo())
         );
     }
 

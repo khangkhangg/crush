@@ -148,11 +148,17 @@ final class InviteController
             ]), 404);
         }
         $link = rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'];
-        $shareLinks = array_map(fn(array $t): array => [
-            'label' => $t['label'],
-            'icon'  => $t['icon'],
-            'href'  => $this->share->render((string) $t['url_template'], $link),
-        ], $this->share->listEnabled());
+        $shareLinks = [];
+        foreach ($this->share->listEnabled() as $t) {
+            if (!\App\Share\ShareTargetRepo::isAllowed((string) $t['url_template'])) {
+                continue;
+            }
+            $shareLinks[] = [
+                'label' => $t['label'],
+                'icon'  => $t['icon'],
+                'href'  => $this->share->render((string) $t['url_template'], $link),
+            ];
+        }
 
         return Response::html($this->view->render('invite/created', [
             'title'      => 'Invite ready',

@@ -12,6 +12,7 @@ use App\Invite\InviteRepo;
 use App\Mail\EmailTemplateRepo;
 use App\Security\BlockRepo;
 use App\Settings\SettingsRepo;
+use App\Share\ShareTargetRepo;
 use App\Theme\AbEventRepo;
 use App\Theme\ThemeRepo;
 use Tests\Support\DatabaseTestCase;
@@ -36,7 +37,7 @@ final class AdminModerationTest extends DatabaseTestCase
             $view, $csrf, new UserRepo($this->pdo(), $this->clock), new SettingsRepo($this->pdo()),
             new ThemeRepo($this->pdo()), new AbEventRepo($this->pdo(), $this->clock),
             new InviteRepo($this->pdo(), $this->clock), new BlockRepo($this->pdo(), $this->clock), 'http://localhost',
-            new EmailTemplateRepo($this->pdo())
+            new EmailTemplateRepo($this->pdo()), new ShareTargetRepo($this->pdo())
         );
     }
 
