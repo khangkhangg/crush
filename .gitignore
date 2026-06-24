@@ -5,3 +5,4 @@
 config/config.local.php
 .agents/
 .DS_Store
+.phpunit.result.cache

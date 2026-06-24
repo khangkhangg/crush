@@ -11,7 +11,7 @@ final class MigrationRunner
     public function run(): array
     {
         $this->pdo->exec(
-            'CREATE TABLE IF NOT EXISTS schema_migrations (filename TEXT PRIMARY KEY, applied_at TEXT NOT NULL)'
+            'CREATE TABLE IF NOT EXISTS schema_migrations (filename VARCHAR(191) PRIMARY KEY, applied_at TEXT NOT NULL)'
         );
 
         $done = [];
