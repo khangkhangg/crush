@@ -29,7 +29,20 @@ final class PasswordLoginTest extends DatabaseTestCase
         $view = new View(\dirname(__DIR__, 2) . '/templates');
         $users = new UserRepo($this->pdo(), $this->clock);
         $magic = new MagicLink($this->pdo(), $users, $this->clock, 900);
-        return new AuthController($view, $session, $csrf, $magic, new SpyMailer(), 'https://crush.app', $users);
+        return new AuthController($view, $session, $csrf, $magic, new SpyMailer(), 'https://crush.app', $users, new \App\Security\RateLimiter($this->pdo(), $this->clock));
+    }
+
+    public function test_rate_limited_after_too_many_attempts(): void
+    {
+        $this->makeUser('rl@x.test', 'goodpass');
+        $csrf = new Csrf(new ArrayStore());
+        $ctrl = $this->controller($csrf, new Session(new ArrayStore()));
+        // 5 wrong attempts on the same email exhaust the per-email cap (5/900s)
+        for ($i = 0; $i < 5; $i++) {
+            $ctrl->loginPassword('rl@x.test', 'wrong', $csrf->token(), '203.0.113.9');
+        }
+        $res = $ctrl->loginPassword('rl@x.test', 'goodpass', $csrf->token(), '203.0.113.9');
+        $this->assertSame(429, $res->status());
     }
 
     private function makeUser(string $email, string $password): void

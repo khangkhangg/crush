@@ -36,7 +36,8 @@ return static function (
     $router->add('POST', '/login', static fn(): Response => $auth->loginPassword(
         is_string($_POST['email'] ?? null) ? $_POST['email'] : '',
         is_string($_POST['password'] ?? null) ? $_POST['password'] : '',
-        is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : ''
+        is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : '',
+        (string) ($_SERVER['REMOTE_ADDR'] ?? '')
     ));
     $router->add('POST', '/login/magic', static fn(): Response => $auth->startMagic(
         is_string($_POST['email'] ?? null) ? $_POST['email'] : '',

@@ -22,7 +22,7 @@ final class AuthControllerTest extends DatabaseTestCase
         $users = new UserRepo($this->pdo(), $clock);
         $magic = new MagicLink($this->pdo(), $users, $clock, 900);
         $view  = new View(\dirname(__DIR__, 2) . '/templates');
-        return new AuthController($view, $session, $csrf, $magic, new SpyMailer(), 'http://localhost', $users);
+        return new AuthController($view, $session, $csrf, $magic, new SpyMailer(), 'http://localhost', $users, new \App\Security\RateLimiter($this->pdo(), $clock));
     }
 
     public function test_show_login_renders_form_with_csrf(): void
