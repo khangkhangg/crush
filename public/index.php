@@ -23,6 +23,7 @@ use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
 use App\Invite\InviteRepo;
+use App\Landing\LandingController;
 use App\Invite\ResponseRepo;
 use App\Mail\MailerFactory;
 use App\Mail\Postman;
@@ -92,9 +93,10 @@ $respondCtrl  = new RespondController(
 
 $adminCtrl   = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'));
 $profileCtrl = new ProfileController($view, $csrf, $users);
+$landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $mailer, (string) $config->get('app_url', 'http://localhost'));
 
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
