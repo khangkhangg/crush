@@ -1,5 +1,6 @@
 <?php
 $message = $message ?? null; $options = $options ?? []; $meals = $meals ?? [];
+$error = $error ?? null;
 ?>
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -10,6 +11,7 @@ $message = $message ?? null; $options = $options ?? []; $meals = $meals ?? [];
 <body class="theme-<?= $e($theme) ?>">
 <?php include __DIR__ . '/../partials/icons.php'; ?>
 <main class="card invite-card">
+  <?php if ($error): ?><p class="error" role="alert"><?= $e($error) ?></p><?php endif; ?>
   <p class="kicker"><?= $e($senderLabel) ?> has a crush on you</p>
   <?php if ($message): ?><p class="message"><?= $e($message) ?></p><?php endif; ?>
   <form method="post" action="/i/<?= $e($token) ?>" class="respond-form">

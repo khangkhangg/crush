@@ -64,6 +64,105 @@ final class RespondController
         ]));
     }
 
+    public function submit(string $token, array $input, string $csrf): Response
+    {
+        $invite = $this->invites->findByToken($token);
+        if ($invite === null) {
+            return Response::html($this->view->render('respond/closed', [
+                'title' => 'Not found', 'theme' => 'bubblegum',
+                'reason' => 'This invite could not be found.',
+            ]), 404);
+        }
+        if ($this->isUnavailable($invite)) {
+            return Response::html($this->view->render('respond/closed', [
+                'title' => 'No longer available', 'theme' => $invite['theme_key'] ?: 'bubblegum',
+                'reason' => 'This invite is no longer available.',
+            ]));
+        }
+
+        $theme = $this->assigner->assignTo($invite);
+
+        if (!$this->csrf->validate($csrf)) {
+            return $this->reshow($invite, $theme, 'Your session expired. Please try again.', 400);
+        }
+
+        $start = $this->parseDate((string) ($input['chosen_start'] ?? ''));
+        if ($start === null) {
+            return $this->reshow($invite, $theme, 'Please pick a day and time.', 422);
+        }
+        $end = $start->modify('+2 hours');
+
+        $meal = (string) ($input['meal_choice'] ?? '');
+        $meal = MealOptions::isValid($meal) ? $meal : null;
+
+        $this->responses->store((int) $invite['id'], [
+            'chosen_start'  => $start->format('Y-m-d H:i:s'),
+            'chosen_end'    => $end->format('Y-m-d H:i:s'),
+            'meal_choice'   => $meal,
+            'meal_wish'     => $this->clean($input['meal_wish'] ?? null),
+            'crush_contact' => $this->clean($input['crush_contact'] ?? null),
+            'pickup_raw'    => $this->clean($input['pickup_raw'] ?? null),
+        ]);
+
+        $final = $invite['date_mode'] === 'confirm' ? InviteState::PENDING_SENDER : InviteState::CONFIRMED;
+        $this->invites->updateStatus((int) $invite['id'], InviteState::RESPONDED);
+        $this->invites->updateStatus((int) $invite['id'], $final);
+        $this->events->log((int) $invite['id'], $theme, 'completed');
+
+        return Response::html($this->view->render('respond/confirmed', [
+            'title'    => 'Your answer is in',
+            'theme'    => $theme,
+            'dateMode' => $invite['date_mode'],
+            'reveal'   => $this->revealLabel($invite),
+            'when'     => $start->format('D, M j \a\t g:i A'),
+        ]));
+    }
+
+    private function parseDate(string $raw): ?\DateTimeImmutable
+    {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return null;
+        }
+        try {
+            return new \DateTimeImmutable($raw);
+        } catch (\Exception) {
+            return null;
+        }
+    }
+
+    private function clean(mixed $v): ?string
+    {
+        if (!is_string($v)) {
+            return null;
+        }
+        $v = trim($v);
+        return $v === '' ? null : $v;
+    }
+
+    private function revealLabel(array $invite): ?string
+    {
+        $anon = (int) $invite['is_anonymous'] === 1;
+        $reveal = (int) $invite['reveal_on_response'] === 1;
+        if ($anon && !$reveal) {
+            return null;
+        }
+        $sender = $this->users->findById((int) $invite['sender_id']);
+        return $sender['name'] ?? $sender['email'] ?? null;
+    }
+
+    private function reshow(array $invite, string $theme, string $error, int $status): Response
+    {
+        return Response::html($this->view->render('respond/show', [
+            'title' => 'You have an invite', 'theme' => $theme,
+            'csrf' => $this->csrf->token(), 'token' => $invite['public_token'],
+            'senderLabel' => $this->senderLabel($invite), 'message' => $invite['message'],
+            'dateMode' => $invite['date_mode'],
+            'options' => $this->invites->dateOptions((int) $invite['id']),
+            'meals' => MealOptions::CHOICES, 'error' => $error,
+        ]), $status);
+    }
+
     private function isUnavailable(array $invite): bool
     {
         $terminal = [InviteState::CLOSED, InviteState::EXPIRED, InviteState::BLOCKED];
