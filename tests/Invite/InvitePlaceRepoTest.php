@@ -47,14 +47,15 @@ final class InvitePlaceRepoTest extends DatabaseTestCase
         $this->assertNull($repo->forMeal($id, 'lunch'));
     }
 
-    public function test_add_is_upsert_per_meal(): void
+    public function test_add_inserts_per_meal(): void
     {
         $repo = new InvitePlaceRepo($this->pdo());
         $id = $this->inviteId();
         $repo->add($id, 'dinner', 'First', null, null, null, null);
         $repo->add($id, 'dinner', 'Second', null, null, null, null);
 
-        $this->assertSame('Second', $repo->forMeal($id, 'dinner')['place_name']);
-        $this->assertCount(1, $repo->forInvite($id));
+        // add() now plain-inserts (unique key dropped); two rows exist
+        $this->assertSame('First', $repo->forMeal($id, 'dinner')['place_name']);
+        $this->assertCount(2, $repo->groupedForInvite($id)['dinner']);
     }
 }
