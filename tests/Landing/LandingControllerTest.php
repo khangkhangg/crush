@@ -65,7 +65,7 @@ final class LandingControllerTest extends DatabaseTestCase
         $session = new Session(new ArrayStore());
         $spy = new SpyMailer();
         $res = $this->controller($csrf, $session, $spy)
-            ->start(['name' => 'New', 'email' => 'new@x.test'], $csrf->token(), 'vi-VN,vi;q=0.9');
+            ->start(['name' => 'New', 'email' => 'new@x.test', 'password' => 'secret1'], $csrf->token(), 'vi-VN,vi;q=0.9');
 
         $this->assertSame(302, $res->status());
         $this->assertSame('/invites/new', $res->headers()['Location']);
@@ -84,7 +84,7 @@ final class LandingControllerTest extends DatabaseTestCase
         $session = new Session(new ArrayStore());
         $spy = new SpyMailer();
         $res = $this->controller($csrf, $session, $spy)
-            ->start(['name' => 'Dee', 'email' => 'dupe@x.test'], $csrf->token(), '');
+            ->start(['name' => 'Dee', 'email' => 'dupe@x.test', 'password' => 'secret1'], $csrf->token(), '');
 
         $this->assertSame(302, $res->status());
         $this->assertSame('/invites/new', $res->headers()['Location']);

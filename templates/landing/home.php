@@ -65,9 +65,11 @@
           <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
           <input name="name" value="<?= $e($name) ?>" placeholder="your name" required autocomplete="name">
           <input type="email" name="email" value="<?= $e($email) ?>" placeholder="you@email.com" required autocomplete="email">
+          <input type="password" name="password" placeholder="pick a password" required minlength="6" autocomplete="new-password"
+                 style="padding:13px;border-radius:14px;border:1px solid #f0d9ea;font-size:16px;font-family:inherit;">
           <button type="submit" class="go">Start <svg><use href="#l-mail"/></svg></button>
         </form>
-        <p class="fine">No password needed — we'll email you a magic link.</p>
+        <p class="fine">Pick a password — you'll use it to sign back in.</p>
       <?php endif; ?>
     </div>
   </main>
