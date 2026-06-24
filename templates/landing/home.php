@@ -27,6 +27,7 @@
     .tag{opacity:.8;margin:6px 0 20px;text-wrap:balance;font-size:15px}
     .card{background:#fff;border-radius:24px;padding:18px;
       box-shadow:0 1px 2px rgba(90,42,82,.08),0 16px 34px rgba(157,123,255,.28)}
+    .card--wide{width:min(94vw,640px)}
     .row{display:flex;flex-direction:column;gap:10px}
     .row input{padding:13px;border-radius:14px;border:1px solid #f0d9ea;font-size:16px;font-family:inherit}
     .go{padding:14px;border:0;border-radius:16px;background:var(--pink);color:#fff;font-weight:800;font-size:16px;
