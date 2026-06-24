@@ -1,0 +1,34 @@
+<?php
+$sent  = $sent  ?? null;
+$error = $error ?? null;
+$title = $title ?? 'Sign in';
+$inner = function () use ($e, $csrf, $title, $sent, $error) {
+  ob_start(); ?>
+  <h1 style="margin:0 0 6px;font-size:24px;text-wrap:balance;">Crush</h1>
+  <?php if (!empty($sent)): ?>
+    <p>We sent a magic sign-in link to <strong><?= $e($sent) ?></strong>. Open it on this device to continue.</p>
+  <?php else: ?>
+    <p style="opacity:.8;margin-top:0;">Sign in to send someone a date invite.</p>
+    <?php if (!empty($error)): ?>
+      <p role="alert" style="color:#b3243b;"><?= $e($error) ?></p>
+    <?php endif; ?>
+    <form method="post" action="/login" style="display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
+      <input class="i" type="email" name="email" placeholder="you@email.com" required
+             style="padding:12px;border-radius:14px;border:1px solid #e7d4ff;font-size:16px;">
+      <button type="submit"
+              style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;font-size:16px;cursor:pointer;">
+        Email me a magic link
+      </button>
+    </form>
+    <p style="text-align:center;margin:14px 0 0;opacity:.6;">or</p>
+    <a href="/auth/google"
+       style="display:block;text-align:center;margin-top:8px;padding:12px;border-radius:14px;border:1px solid #e7d4ff;color:#5a2a52;text-decoration:none;font-weight:600;">
+      Continue with Google
+    </a>
+  <?php endif;
+  return ob_get_clean();
+};
+// Render the inner content, then wrap it in the shared layout.
+$body = $inner();
+include __DIR__ . '/../layout.php';
