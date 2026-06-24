@@ -217,9 +217,13 @@ final class AdminController
         $lang = (string) ($input['lang'] ?? '');
         $subject = (string) ($input['subject'] ?? '');
         $body = (string) ($input['body_html'] ?? '');
-        if ($key !== '' && $lang !== '') {
-            $this->emailTemplates->update($key, $lang, $subject, $body);
+        if ($key === '' || $lang === '') {
+            return $this->render('admin/templates', [
+                'title' => 'Email templates', 'templates' => $this->emailTemplates->all(),
+                'flash' => 'Invalid template key or language.',
+            ])->withStatus(400);
         }
+        $this->emailTemplates->update($key, $lang, $subject, $body);
         return (new Response('', 302))->withHeader('Location', '/admin/templates');
     }
 
