@@ -5,8 +5,15 @@ use App\Auth\AuthController;
 use App\Auth\GoogleController;
 use App\Core\Response;
 use App\Core\Router;
+use App\Invite\InviteController;
 
-return static function (Router $router, AuthController $auth, GoogleController $google): void {
+return static function (
+    Router $router,
+    AuthController $auth,
+    GoogleController $google,
+    InviteController $invite,
+    callable $currentUserId
+): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
     $router->add('GET',  '/login',              static fn(): Response => $auth->showLogin(
@@ -26,4 +33,10 @@ return static function (Router $router, AuthController $auth, GoogleController $
         is_string($_GET['code']  ?? null) ? $_GET['code']  : null,
         is_string($_GET['state'] ?? null) ? $_GET['state'] : null
     ));
+
+    $router->add('GET',  '/',              static fn(): Response => $invite->dashboard($currentUserId()));
+    $router->add('GET',  '/invites',       static fn(): Response => $invite->dashboard($currentUserId()));
+    $router->add('GET',  '/invites/new',   static fn(): Response => $invite->showNew($currentUserId()));
+    $router->add('POST', '/invites',       static fn(): Response => $invite->create($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('GET',  '/i/{token}/created', static fn(string $token): Response => $invite->showCreated($currentUserId(), $token));
 };

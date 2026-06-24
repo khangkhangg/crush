@@ -18,6 +18,8 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Core\SystemClock;
 use App\Core\View;
+use App\Invite\InviteController;
+use App\Invite\InviteRepo;
 
 /** @var Config $config */
 $config = require dirname(__DIR__) . '/config/config.php';
@@ -47,8 +49,15 @@ $googleProvider = new GoogleProvider($googleClientId, $googleClientSecret, $goog
 $googleAuth     = new GoogleAuth($googleProvider, $users);
 $googleCtrl     = new GoogleController($googleAuth, $session, $store, $googleClientId !== '');
 
+$inviteRepo = new InviteRepo($pdo, $clock);
+$inviteCtrl = new InviteController(
+    $view, $csrf, $inviteRepo, $users, $clock,
+    (string) $config->get('app_url', 'http://localhost')
+);
+$currentUserId = static fn(): ?int => $session->userId();
+
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
