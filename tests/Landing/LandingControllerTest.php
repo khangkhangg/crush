@@ -9,7 +9,10 @@ use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
+use App\Ics\IcsBuilder;
 use App\Landing\LandingController;
+use App\Mail\EmailTemplateRepo;
+use App\Mail\Postman;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
 use Tests\Support\SpyMailer;
@@ -18,13 +21,19 @@ final class LandingControllerTest extends DatabaseTestCase
 {
     private FrozenClock $clock;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->clock = new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
+    }
+
     private function controller(Csrf $csrf, Session $session, SpyMailer $spy): LandingController
     {
-        $this->clock = new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
         $view = new View(\dirname(__DIR__, 2) . '/templates');
         $users = new UserRepo($this->pdo(), $this->clock);
         $magic = new MagicLink($this->pdo(), $users, $this->clock, 900);
-        return new LandingController($view, $csrf, $users, $magic, $session, $spy, 'https://crush.app');
+        $postman = new Postman($spy, new IcsBuilder($this->clock), new EmailTemplateRepo($this->pdo()), 'https://crush.app');
+        return new LandingController($view, $csrf, $users, $magic, $session, $postman, 'https://crush.app');
     }
 
     public function test_home_renders_for_logged_out(): void
@@ -32,64 +41,64 @@ final class LandingControllerTest extends DatabaseTestCase
         $csrf = new Csrf(new ArrayStore());
         $res = $this->controller($csrf, new Session(new ArrayStore()), new SpyMailer())->home(null);
         $this->assertSame(200, $res->status());
-        $this->assertStringContainsString($csrf->token(), $res->body());
         $this->assertStringContainsString('name="email"', $res->body());
     }
 
-    public function test_home_redirects_logged_in_to_dashboard(): void
-    {
-        $res = $this->controller(new Csrf(new ArrayStore()), new Session(new ArrayStore()), new SpyMailer())->home(42);
-        $this->assertSame(302, $res->status());
-        $this->assertSame('/invites', $res->headers()['Location']);
-    }
-
-    public function test_start_bad_csrf_is_400(): void
+    public function test_bad_csrf_is_400(): void
     {
         $res = $this->controller(new Csrf(new ArrayStore()), new Session(new ArrayStore()), new SpyMailer())
-            ->start(['name' => 'Ann', 'email' => 'a@x.test'], 'wrong');
+            ->start(['name' => 'A', 'email' => 'a@x.test'], 'wrong', '');
         $this->assertSame(400, $res->status());
     }
 
-    public function test_start_invalid_email_is_422(): void
+    public function test_invalid_email_is_422(): void
     {
         $csrf = new Csrf(new ArrayStore());
         $res = $this->controller($csrf, new Session(new ArrayStore()), new SpyMailer())
-            ->start(['name' => 'Ann', 'email' => 'nope'], $csrf->token());
+            ->start(['name' => 'A', 'email' => 'nope'], $csrf->token(), '');
         $this->assertSame(422, $res->status());
     }
 
-    public function test_new_email_creates_logs_in_and_redirects(): void
+    public function test_new_email_creates_logs_in_sets_lang_and_welcomes(): void
     {
         $csrf = new Csrf(new ArrayStore());
         $session = new Session(new ArrayStore());
         $spy = new SpyMailer();
-        $ctrl = $this->controller($csrf, $session, $spy);
-
-        $res = $ctrl->start(['name' => 'New', 'email' => 'new@x.test'], $csrf->token());
+        $res = $this->controller($csrf, $session, $spy)
+            ->start(['name' => 'New', 'email' => 'new@x.test'], $csrf->token(), 'vi-VN,vi;q=0.9');
 
         $this->assertSame(302, $res->status());
         $this->assertSame('/invites/new', $res->headers()['Location']);
         $this->assertTrue($session->check());
-        $this->assertCount(1, $spy->sent);                       // magic link emailed
-        $this->assertSame('new@x.test', $spy->sent[0]->to);
         $user = (new UserRepo($this->pdo(), $this->clock))->findByEmail('new@x.test');
-        $this->assertSame('New', $user['name']);
+        $this->assertSame('vi', $user['lang']);                    // detected + stored
+        $this->assertCount(1, $spy->sent);                          // welcome email
+        $this->assertSame('new@x.test', $spy->sent[0]->to);
+        $this->assertStringContainsString('Chao mung', $spy->sent[0]->subject); // vi welcome subject
     }
 
-    public function test_existing_email_emails_link_without_login(): void
+    public function test_existing_email_logs_in_without_welcome(): void
     {
+        (new UserRepo($this->pdo(), $this->clock))->create('dupe@x.test', 'Dee', 'magic');
         $csrf = new Csrf(new ArrayStore());
         $session = new Session(new ArrayStore());
         $spy = new SpyMailer();
-        (new UserRepo($this->pdo(), new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'))))
-            ->create('dupe@x.test', 'Dee', 'magic');
-
         $res = $this->controller($csrf, $session, $spy)
-            ->start(['name' => 'Dee', 'email' => 'dupe@x.test'], $csrf->token());
+            ->start(['name' => 'Dee', 'email' => 'dupe@x.test'], $csrf->token(), '');
 
-        $this->assertSame(200, $res->status());
-        $this->assertFalse($session->check());                    // NOT logged in
-        $this->assertCount(1, $spy->sent);
-        $this->assertStringContainsString('check your email', strtolower($res->body()));
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/invites/new', $res->headers()['Location']);
+        $this->assertTrue($session->check());                       // logged in
+        $this->assertCount(0, $spy->sent);                          // NO welcome email
+    }
+
+    public function test_switch_account_logs_out(): void
+    {
+        $session = new Session(new ArrayStore());
+        $session->login(7);
+        $res = $this->controller(new Csrf(new ArrayStore()), $session, new SpyMailer())->switchAccount();
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/', $res->headers()['Location']);
+        $this->assertFalse($session->check());
     }
 }

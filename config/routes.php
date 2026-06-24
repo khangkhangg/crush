@@ -50,7 +50,12 @@ return static function (
 
     // Front door
     $router->add('GET',  '/', static fn(): Response => $landing->home($currentUserId()));
-    $router->add('POST', '/', static fn(): Response => $landing->start($_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('POST', '/', static fn(): Response => $landing->start(
+        $_POST,
+        (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? ''),
+        (string) ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
+    ));
+    $router->add('GET', '/switch', static fn(): Response => $landing->switchAccount());
     // Dashboard moves to /invites only (the old `GET /` -> dashboard line is removed)
     $router->add('GET',  '/invites',       static fn(): Response => $invite->dashboard($currentUserId()));
     $router->add('GET',  '/invites/new',   static fn(): Response => $invite->showNew($currentUserId()));

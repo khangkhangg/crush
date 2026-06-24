@@ -104,7 +104,7 @@ $respondCtrl  = new RespondController(
 $adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'), $emailTemplates);
 $adminAuthCtrl = new AdminAuthController($view, $csrf, $users, $session, new RateLimiter($pdo, $clock));
 $profileCtrl = new ProfileController($view, $csrf, $users);
-$landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $mailer, (string) $config->get('app_url', 'http://localhost'));
+$landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $postman, (string) $config->get('app_url', 'http://localhost'));
 $revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock));
 
 $router = new Router();
