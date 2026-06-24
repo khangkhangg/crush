@@ -1,5 +1,5 @@
 <?php $error = $error ?? null; $old = $old ?? []; $csrf = $csrf ?? ''; $meals = $meals ?? []; ?>
-<?php $content = function () use ($e, $csrf, $error, $old) {
+<?php $content = function () use ($e, $csrf, $error, $old, $meals) {
   $val = fn(string $k) => $e($old[$k] ?? '');
   ob_start(); ?>
   <h1 style="text-wrap:balance;">Send a crush invite</h1>

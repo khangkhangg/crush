@@ -61,6 +61,8 @@ final class InviteControllerTest extends DatabaseTestCase
         $this->assertSame(200, $res->status());
         $this->assertStringContainsString($csrf->token(), $res->body());
         $this->assertStringContainsString('name="crush_email"', $res->body());
+        // Per-vibe "add a spot" inputs must actually render (regression: $meals not captured in closure).
+        $this->assertStringContainsString('name="places[dinner][name]"', $res->body());
     }
 
     public function test_create_rejects_bad_csrf(): void
