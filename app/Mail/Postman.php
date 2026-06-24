@@ -23,6 +23,7 @@ final class Postman
             'message'     => $invite['message'] ?? null,
             'link'        => rtrim($this->appUrl, '/') . '/i/' . $invite['public_token'],
             'theme'       => $invite['theme_key'] ?? 'bubblegum',
+            'unsubscribe' => rtrim($this->appUrl, '/') . '/unsubscribe/' . $invite['public_token'],
         ]);
         return $this->dispatch(new Email(
             (string) $invite['crush_email'],

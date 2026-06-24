@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use App\Admin\AdminController;
+use App\Admin\BlockController;
 use App\Auth\AuthController;
 use App\Auth\GoogleAuth;
 use App\Auth\GoogleController;
@@ -27,6 +29,8 @@ use App\Mail\Postman;
 use App\Maps\CurlFetcher;
 use App\Maps\LinkResolver;
 use App\Respond\RespondController;
+use App\Security\BlockRepo;
+use App\Security\RateLimiter;
 use App\Settings\SettingsRepo;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
@@ -65,10 +69,14 @@ $googleAuth     = new GoogleAuth($googleProvider, $users);
 $googleCtrl     = new GoogleController($googleAuth, $session, $store, $googleClientId !== '');
 
 $inviteRepo = new InviteRepo($pdo, $clock);
+$blockRepo  = new BlockRepo($pdo, $clock);
+$blockCtrl  = new BlockController($view, $inviteRepo, $blockRepo);
 $inviteCtrl = new InviteController(
     $view, $csrf, $inviteRepo, $users, $clock,
     (string) $config->get('app_url', 'http://localhost'),
-    $postman
+    $postman,
+    new RateLimiter($pdo, $clock),
+    $blockRepo,
 );
 $currentUserId = static fn(): ?int => $session->userId();
 
@@ -81,8 +89,10 @@ $respondCtrl  = new RespondController(
     $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman
 );
 
+$adminCtrl = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'));
+
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
