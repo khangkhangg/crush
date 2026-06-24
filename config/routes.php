@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Admin\AdminAuthController;
 use App\Admin\AdminController;
 use App\Admin\BlockController;
 use App\Auth\AuthController;
@@ -25,6 +26,7 @@ return static function (
     ProfileController $profile,
     LandingController $landing,
     RevealController $reveal,
+    AdminAuthController $adminAuth,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -59,6 +61,13 @@ return static function (
     $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit($token, $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 
     $router->add('GET', '/unsubscribe/{token}', static fn(string $token): Response => $block->report($token));
+
+    $router->add('GET',  '/admin/login', static fn(): Response => $adminAuth->showLogin());
+    $router->add('POST', '/admin/login', static fn(): Response => $adminAuth->login(
+        $_POST,
+        (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? ''),
+        (string) ($_SERVER['REMOTE_ADDR'] ?? '')
+    ));
 
     $router->add('GET',  '/admin',               static fn(): Response => $admin->dashboard($currentUserId()));
     $router->add('GET',  '/admin/settings',      static fn(): Response => $admin->settings($currentUserId()));
