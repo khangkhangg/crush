@@ -8,6 +8,7 @@ use App\Auth\GoogleController;
 use App\Core\Response;
 use App\Core\Router;
 use App\Invite\InviteController;
+use App\Profile\ProfileController;
 use App\Respond\RespondController;
 
 return static function (
@@ -19,6 +20,7 @@ return static function (
     RespondController $respond,
     BlockController $block,
     AdminController $admin,
+    ProfileController $profile,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
 
@@ -59,4 +61,7 @@ return static function (
     $router->add('POST', '/admin/themes',        static fn(): Response => $admin->saveThemes($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
     $router->add('GET',  '/admin/moderation',    static fn(): Response => $admin->moderation($currentUserId(), (static fn($v) => is_string($v) ? $v : null)($_GET['q'] ?? null)));
     $router->add('POST', '/admin/block',         static fn(): Response => $admin->blockFromAdmin($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+
+    $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
+    $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 };

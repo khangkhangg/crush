@@ -50,6 +50,30 @@ final class UserRepo
         $stmt->execute([$googleId, $avatarUrl, $userId]);
     }
 
+    public function saveProfile(
+        int $id,
+        string $avatarKey,
+        ?string $pronouns,
+        string $bio,
+        ?string $contact
+    ): void {
+        $stmt = $this->pdo->prepare(
+            'UPDATE users
+                SET avatar_key = ?, pronouns = ?, bio = ?, contact = ?, profile_completed_at = ?
+              WHERE id = ?'
+        );
+        $stmt->execute([
+            $avatarKey, $pronouns, $bio, $contact,
+            $this->clock->now()->format('Y-m-d H:i:s'),
+            $id,
+        ]);
+    }
+
+    public static function isProfileComplete(array $user): bool
+    {
+        return isset($user['profile_completed_at']) && $user['profile_completed_at'] !== '';
+    }
+
     private function one(string $sql, array $params): ?array
     {
         $stmt = $this->pdo->prepare($sql);
