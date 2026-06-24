@@ -111,20 +111,24 @@ final class InviteController
             }
         }
 
-        $placeInput = (array) ($input['places'] ?? []);
-        foreach (MealOptions::CHOICES as $meal) {
-            $key = $meal['key'];
-            $name = trim((string) ($placeInput[$key]['name'] ?? ''));
-            if ($name === '') {
-                continue;
+        $placeMode = ($input['place_mode'] ?? 'open') === 'focused' ? 'focused' : 'open';
+        if ($placeMode === 'focused') {
+            $vibe = (string) ($input['focus_vibe'] ?? '');
+            if (MealOptions::isValid($vibe)) {
+                foreach ((array) ($input['opts'] ?? []) as $i => $opt) {
+                    $name = trim((string) ($opt['name'] ?? ''));
+                    if ($name === '') {
+                        continue;
+                    }
+                    $url = trim((string) ($opt['url'] ?? ''));
+                    $cuisine = trim((string) ($opt['cuisine'] ?? '')) ?: null;
+                    $resolved = $url !== '' ? $this->maps->resolve($url) : ['name' => null, 'address' => null, 'clean_url' => null];
+                    $this->places->addOption(
+                        (int) $invite['id'], $vibe, $name, $url !== '' ? $url : null,
+                        $resolved['name'], $resolved['address'], $resolved['clean_url'], $cuisine, (int) $i
+                    );
+                }
             }
-            $url = trim((string) ($placeInput[$key]['url'] ?? ''));
-            $cuisine = trim((string) ($placeInput[$key]['cuisine'] ?? '')) ?: null;
-            $resolved = $url !== '' ? $this->maps->resolve($url) : ['name' => null, 'address' => null, 'clean_url' => null];
-            $this->places->add(
-                (int) $invite['id'], $key, $name, $url !== '' ? $url : null,
-                $resolved['name'], $resolved['address'], $resolved['clean_url'], $cuisine
-            );
         }
 
         if ($delivery === 'email') {

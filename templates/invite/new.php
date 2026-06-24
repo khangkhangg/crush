@@ -21,10 +21,12 @@
       <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="delivery" value="email" checked> Email it to them</label>
       <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="delivery" value="link"> I will share the link myself</label>
     </fieldset>
+    <div id="emailWrap" class="iv-collapse">
     <label>Their email
       <input type="email" id="crush_email" name="crush_email" value="<?= $val('crush_email') ?>"
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
     </label>
+    </div>
     <label>Their name (optional)
       <input type="text" name="crush_name" value="<?= $val('crush_name') ?>"
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
@@ -46,27 +48,34 @@
       <input type="checkbox" name="reveal_on_response" value="1"> Reveal me after they respond
     </label>
     <style>
-      .iv-places { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
-      .iv-place { display:grid; grid-template-columns:84px 1.4fr 1fr 1.4fr; gap:8px; align-items:center; }
-      .iv-place > .iv-label { font-size:13px; opacity:.8; }
-      .iv-place input { min-width:0; width:100%; padding:9px; border-radius:10px; border:1px solid #e7d4ff; }
-      @media (max-width:560px) {
-        .iv-place { grid-template-columns:1fr 1fr; }
-        .iv-place > .iv-label { grid-column:1 / -1; font-weight:600; opacity:.7; }
-        .iv-place .iv-url { grid-column:1 / -1; }
-      }
+      .iv-collapse { overflow:hidden; transition:max-height .3s ease, opacity .3s ease; max-height:120px; opacity:1; }
+      .iv-collapse.hide { max-height:0; opacity:0; }
+      .iv-opt { display:grid; grid-template-columns:1.4fr 1fr 1.6fr auto; gap:8px; align-items:center; margin-top:8px; }
+      .iv-opt input { min-width:0; width:100%; padding:9px; border-radius:10px; border:1px solid #e7d4ff; }
+      .iv-opt .rm { border:0;background:none;color:#b3243b;cursor:pointer;font-size:18px;line-height:1; }
+      .iv-prev { font-size:12px; color:#7a5; margin:2px 0 0 2px; min-height:14px; }
+      @media (max-width:560px){ .iv-opt{ grid-template-columns:1fr 1fr; } .iv-opt .iv-u{ grid-column:1/-1; } }
+      #placePanel.hide { display:none; }
     </style>
     <fieldset style="border:0;padding:0;margin:0;">
-      <legend style="font-size:13px;font-weight:600;opacity:.7;">Suggest a spot for each vibe (optional)</legend>
-      <div class="iv-places">
-        <?php foreach (($meals ?? []) as $meal): ?>
-          <div class="iv-place">
-            <span class="iv-label"><?= $e($meal['label']) ?></span>
-            <input type="text" name="places[<?= $e($meal['key']) ?>][name]" placeholder="restaurant name">
-            <input type="text" name="places[<?= $e($meal['key']) ?>][cuisine]" placeholder="cuisine" list="cuisines">
-            <input class="iv-url" type="text" name="places[<?= $e($meal['key']) ?>][url]" placeholder="maps link (optional)">
+      <legend style="font-size:13px;font-weight:600;opacity:.7;">A spot to suggest?</legend>
+      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="place_mode" value="open" checked> I'm open — they pick the vibe</label>
+      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="place_mode" value="focused"> Let's do a specific vibe</label>
+      <div id="placePanel" class="hide" style="margin-top:8px;">
+        <select name="focus_vibe" style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
+          <?php foreach (($meals ?? []) as $meal): ?>
+            <option value="<?= $e($meal['key']) ?>"><?= $e($meal['label']) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <div id="optList">
+          <div class="iv-opt">
+            <input type="text" name="opts[0][name]" placeholder="restaurant name">
+            <input type="text" name="opts[0][cuisine]" placeholder="cuisine" list="cuisines">
+            <input class="iv-u" type="text" name="opts[0][url]" placeholder="maps link (optional)" data-maps>
+            <button type="button" class="rm" aria-label="Remove">&times;</button>
           </div>
-        <?php endforeach; ?>
+        </div>
+        <button type="button" id="addPlace" style="margin-top:6px;padding:8px 12px;border:1px dashed #e7d4ff;border-radius:10px;background:#fff;color:#ff3d8b;font-weight:600;cursor:pointer;">+ Add another place</button>
       </div>
     </fieldset>
     <datalist id="cuisines">
@@ -81,15 +90,40 @@
   </form>
     <script>
     (function(){
-      var radios = document.querySelectorAll('input[name="delivery"]');
       var email = document.getElementById('crush_email');
-      function sync(){
-        var mode = document.querySelector('input[name="delivery"]:checked');
-        var isEmail = !mode || mode.value === 'email';
-        if (email) { email.required = isEmail; email.placeholder = isEmail ? '' : 'optional'; }
+      var wrap = document.getElementById('emailWrap');
+      function syncDelivery(){
+        var m = document.querySelector('input[name="delivery"]:checked');
+        var link = m && m.value === 'link';
+        if (email) email.required = !link;
+        if (wrap) wrap.classList.toggle('hide', !!link);
       }
-      radios.forEach(function(r){ r.addEventListener('change', sync); });
-      sync();
+      document.querySelectorAll('input[name="delivery"]').forEach(function(r){ r.addEventListener('change', syncDelivery); });
+      syncDelivery();
+
+      var panel = document.getElementById('placePanel');
+      function syncMode(){
+        var m = document.querySelector('input[name="place_mode"]:checked');
+        if (panel) panel.classList.toggle('hide', !(m && m.value === 'focused'));
+      }
+      document.querySelectorAll('input[name="place_mode"]').forEach(function(r){ r.addEventListener('change', syncMode); });
+      syncMode();
+
+      var list = document.getElementById('optList');
+      var add = document.getElementById('addPlace');
+      if (add) add.addEventListener('click', function(){
+        var n = list.children.length;
+        var row = list.children[0].cloneNode(true);
+        row.querySelectorAll('input').forEach(function(inp){
+          inp.value = '';
+          inp.name = inp.name.replace(/opts\[\d+\]/, 'opts[' + n + ']');
+        });
+        var pv = row.querySelector('.iv-prev'); if (pv) pv.remove();
+        list.appendChild(row);
+      });
+      if (list) list.addEventListener('click', function(e){
+        if (e.target.classList.contains('rm') && list.children.length > 1) e.target.closest('.iv-opt').remove();
+      });
     })();
     </script>
   <?php return ob_get_clean(); };

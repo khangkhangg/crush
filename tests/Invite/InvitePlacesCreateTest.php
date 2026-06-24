@@ -56,19 +56,17 @@ final class InvitePlacesCreateTest extends DatabaseTestCase
         $sender = $users->create('sue@x.test', 'Sue', 'magic')['id'];
         $ctrl->create($sender, [
             'crush_email' => 'c@x.test', 'date_mode' => 'instant',
-            'places' => [
-                'dinner' => ['name' => 'Tartine', 'url' => 'https://maps.app.goo.gl/dinner'],
-                'coffee' => ['name' => 'Blue Bottle', 'url' => ''],
-                'lunch'  => ['name' => '', 'url' => ''], // empty -> skipped
+            'place_mode' => 'focused', 'focus_vibe' => 'dinner',
+            'opts' => [
+                ['name' => 'Tartine', 'url' => 'https://maps.app.goo.gl/dinner', 'cuisine' => ''],
+                ['name' => '', 'url' => ''], // empty -> skipped
             ],
         ], $csrf->token());
 
         $invite = $invites->listBySender($sender)[0];
-        $places = $placeRepo->forInvite((int) $invite['id']);
-        $this->assertArrayHasKey('dinner', $places);
-        $this->assertArrayHasKey('coffee', $places);
-        $this->assertArrayNotHasKey('lunch', $places);
-        $this->assertSame('Tartine Bakery', $places['dinner']['place_resolved_name']); // resolved
-        $this->assertSame('Blue Bottle', $places['coffee']['place_name']);
+        $grouped = $placeRepo->groupedForInvite((int) $invite['id']);
+        $this->assertArrayHasKey('dinner', $grouped);
+        $this->assertCount(1, $grouped['dinner']); // only non-empty row
+        $this->assertSame('Tartine Bakery', $grouped['dinner'][0]['place_resolved_name']); // resolved
     }
 }
