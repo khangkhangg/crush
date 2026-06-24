@@ -10,11 +10,13 @@ use App\Core\View;
 use App\Invite\InviteRepo;
 use App\Invite\InviteState;
 use App\Invite\ResponseRepo;
+use App\Maps\LinkResolver;
 use App\Respond\RespondController;
 use App\Theme\AbEventRepo;
 use App\Theme\ABAssigner;
 use App\Theme\ThemeRepo;
 use Tests\Support\DatabaseTestCase;
+use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
 
 final class RespondSubmitTest extends DatabaseTestCase
@@ -34,7 +36,8 @@ final class RespondSubmitTest extends DatabaseTestCase
             new UserRepo($this->pdo(), $this->clock),
             new ABAssigner(new ThemeRepo($this->pdo()), $invites, fn(int $m) => 0),
             new AbEventRepo($this->pdo(), $this->clock),
-            $this->clock
+            $this->clock,
+            new LinkResolver(new FakeFetcher([]))
         );
     }
 
