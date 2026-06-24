@@ -31,6 +31,7 @@ use App\Maps\CurlFetcher;
 use App\Maps\LinkResolver;
 use App\Profile\ProfileController;
 use App\Respond\RespondController;
+use App\Reveal\RevealController;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 use App\Settings\SettingsRepo;
@@ -94,9 +95,10 @@ $respondCtrl  = new RespondController(
 $adminCtrl   = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'));
 $profileCtrl = new ProfileController($view, $csrf, $users);
 $landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $mailer, (string) $config->get('app_url', 'http://localhost'));
+$revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock));
 
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
