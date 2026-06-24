@@ -73,4 +73,5 @@ return static function (
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 
     $router->add('GET', '/invites/{token}/response', static fn(string $token): Response => $reveal->show($currentUserId(), $token));
+    $router->add('GET', '/invites/{token}/calendar', static fn(string $token): Response => $reveal->downloadIcs($currentUserId(), $token));
 };

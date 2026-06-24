@@ -37,6 +37,38 @@ final class RevealController
         return $this->render('reveal', $invite, $response);
     }
 
+    public function downloadIcs(?int $userId, string $token): Response
+    {
+        $ctx = $this->load($userId, $token);
+        if ($ctx instanceof Response) {
+            return $ctx;
+        }
+        [$invite, $response, $complete] = $ctx;
+
+        if ($response === null) {
+            return Response::html('<h1>Not found</h1>', 404);
+        }
+        if (!$complete) {
+            return (new Response('', 302))->withHeader('Location', '/invites/' . $invite['public_token'] . '/response');
+        }
+
+        $crush = $invite['crush_name'] ?: 'your crush';
+        $place = trim((string) (($response['pickup_name'] ?? '') . ' ' . ($response['pickup_address'] ?? '')));
+        $ics = $this->ics->build([
+            'uid'         => $invite['public_token'] . '@crush',
+            'summary'     => 'Date with ' . $crush,
+            'start'       => (string) $response['chosen_start'],
+            'end'         => (string) $response['chosen_end'],
+            'location'    => $place !== '' ? $place : null,
+            'description' => !empty($response['meal_choice']) ? (string) $response['meal_choice'] : null,
+        ]);
+
+        return new Response($ics, 200, [
+            'Content-Type'        => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="Date.ics"',
+        ]);
+    }
+
     /**
      * @return Response|array{0:array,1:?array,2:bool} early Response, or [invite, response, profileComplete]
      */
