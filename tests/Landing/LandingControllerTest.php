@@ -74,7 +74,7 @@ final class LandingControllerTest extends DatabaseTestCase
         $this->assertSame('vi', $user['lang']);                    // detected + stored
         $this->assertCount(1, $spy->sent);                          // welcome email
         $this->assertSame('new@x.test', $spy->sent[0]->to);
-        $this->assertStringContainsString('Chao mung', $spy->sent[0]->subject); // vi welcome subject
+        $this->assertStringContainsString('Chào mừng', $spy->sent[0]->subject); // vi welcome subject (accented)
     }
 
     public function test_existing_email_logs_in_without_welcome(): void
