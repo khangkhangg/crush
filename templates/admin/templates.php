@@ -5,7 +5,7 @@
   <table><tr><th>Key</th><th>Lang</th><th></th></tr>
   <?php foreach ($templates as $t): ?>
     <tr><td><?= $e($t['key']) ?></td><td><?= $e($t['lang']) ?></td>
-      <td><a href="/admin/templates/edit?key=<?= $e($t['key']) ?>&lang=<?= $e($t['lang']) ?>">Edit</a></td></tr>
+      <td><a href="/admin/templates/edit?key=<?= $e($t['key']) ?>&amp;lang=<?= $e($t['lang']) ?>">Edit</a></td></tr>
   <?php endforeach; ?>
   </table></div>
 <?php return ob_get_clean(); };
