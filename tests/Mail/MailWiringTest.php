@@ -9,6 +9,7 @@ use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
 use App\Mail\Postman;
@@ -40,7 +41,8 @@ final class MailWiringTest extends DatabaseTestCase
             new ABAssigner(new ThemeRepo($this->pdo()), $invites, fn(int $m) => 0),
             new AbEventRepo($this->pdo(), $clock), $clock,
             new LinkResolver(new FakeFetcher([])), $postman,
-            new CrushOnboarder($users, new MagicLink($this->pdo(), $users, $clock, 900), $postman, 'http://localhost')
+            new CrushOnboarder($users, new MagicLink($this->pdo(), $users, $clock, 900), $postman, 'http://localhost'),
+            new InvitePlaceRepo($this->pdo())
         );
 
         $sender = $users->create('sue@x.test', 'Sue', 'magic');

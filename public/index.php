@@ -95,7 +95,7 @@ $abEvents     = new AbEventRepo($pdo, $clock);
 $assigner     = new ABAssigner($themeRepo, $inviteRepo);
 $crushOnboarder = new CrushOnboarder($users, $magic, $postman, (string) $config->get('app_url', 'http://localhost'));
 $respondCtrl  = new RespondController(
-    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman, $crushOnboarder
+    $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman, $crushOnboarder, $invitePlaceRepo
 );
 
 $adminCtrl   = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'));

@@ -9,6 +9,7 @@ use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
 use App\Mail\Postman;
@@ -41,7 +42,8 @@ final class RespondOnboardTest extends DatabaseTestCase
             $view, $csrf, $invites, new ResponseRepo($this->pdo(), $clock), $users,
             new ABAssigner(new ThemeRepo($this->pdo()), $invites, fn(int $m) => 0),
             new AbEventRepo($this->pdo(), $clock), $clock,
-            new LinkResolver(new FakeFetcher([])), $postman, $onboarder
+            new LinkResolver(new FakeFetcher([])), $postman, $onboarder,
+            new InvitePlaceRepo($this->pdo())
         );
 
         $sender = $users->create('sue@x.test', 'Sue', 'magic');
