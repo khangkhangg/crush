@@ -9,6 +9,8 @@ use App\Core\Csrf;
 use App\Core\Response;
 use App\Core\View;
 use App\Mail\Postman;
+use App\Maps\LinkResolver;
+use App\Respond\MealOptions;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 
@@ -24,6 +26,8 @@ final class InviteController
         private Postman $postman,
         private RateLimiter $limits,
         private BlockRepo $blocks,
+        private InvitePlaceRepo $places,
+        private LinkResolver $maps,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -95,6 +99,21 @@ final class InviteController
             }
         }
 
+        $placeInput = (array) ($input['places'] ?? []);
+        foreach (MealOptions::CHOICES as $meal) {
+            $key = $meal['key'];
+            $name = trim((string) ($placeInput[$key]['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $url = trim((string) ($placeInput[$key]['url'] ?? ''));
+            $resolved = $url !== '' ? $this->maps->resolve($url) : ['name' => null, 'address' => null, 'clean_url' => null];
+            $this->places->add(
+                (int) $invite['id'], $key, $name, $url !== '' ? $url : null,
+                $resolved['name'], $resolved['address'], $resolved['clean_url']
+            );
+        }
+
         $this->postman->sendInvite($invite);
 
         return $this->redirect('/i/' . $invite['public_token'] . '/created');
@@ -127,6 +146,7 @@ final class InviteController
             'csrf'  => $this->csrf->token(),
             'error' => $error,
             'old'   => $old,
+            'meals' => MealOptions::CHOICES,
         ]), $status);
     }
 

@@ -22,6 +22,7 @@ use App\Core\SystemClock;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Landing\LandingController;
 use App\Invite\ResponseRepo;
@@ -72,8 +73,10 @@ $googleProvider = new GoogleProvider($googleClientId, $googleClientSecret, $goog
 $googleAuth     = new GoogleAuth($googleProvider, $users);
 $googleCtrl     = new GoogleController($googleAuth, $session, $store, $googleClientId !== '');
 
-$inviteRepo = new InviteRepo($pdo, $clock);
-$blockRepo  = new BlockRepo($pdo, $clock);
+$inviteRepo      = new InviteRepo($pdo, $clock);
+$blockRepo       = new BlockRepo($pdo, $clock);
+$invitePlaceRepo = new InvitePlaceRepo($pdo);
+$linkResolver    = new LinkResolver(new CurlFetcher());
 $blockCtrl  = new BlockController($view, $inviteRepo, $blockRepo);
 $inviteCtrl = new InviteController(
     $view, $csrf, $inviteRepo, $users, $clock,
@@ -81,6 +84,8 @@ $inviteCtrl = new InviteController(
     $postman,
     new RateLimiter($pdo, $clock),
     $blockRepo,
+    $invitePlaceRepo,
+    $linkResolver,
 );
 $currentUserId = static fn(): ?int => $session->userId();
 
@@ -88,7 +93,6 @@ $responseRepo = new ResponseRepo($pdo, $clock);
 $themeRepo    = new ThemeRepo($pdo);
 $abEvents     = new AbEventRepo($pdo, $clock);
 $assigner     = new ABAssigner($themeRepo, $inviteRepo);
-$linkResolver = new LinkResolver(new CurlFetcher());
 $crushOnboarder = new CrushOnboarder($users, $magic, $postman, (string) $config->get('app_url', 'http://localhost'));
 $respondCtrl  = new RespondController(
     $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman, $crushOnboarder

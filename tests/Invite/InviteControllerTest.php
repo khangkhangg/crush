@@ -9,11 +9,14 @@ use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InviteController;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Mail\Postman;
+use App\Maps\LinkResolver;
 use App\Security\BlockRepo;
 use App\Security\RateLimiter;
 use Tests\Support\DatabaseTestCase;
+use Tests\Support\FakeFetcher;
 use Tests\Support\FrozenClock;
 use Tests\Support\SpyMailer;
 
@@ -33,6 +36,8 @@ final class InviteControllerTest extends DatabaseTestCase
             new Postman(new SpyMailer(), new IcsBuilder($this->clock), $view, 'http://localhost'),
             new RateLimiter($this->pdo(), $this->clock),
             new BlockRepo($this->pdo(), $this->clock),
+            new InvitePlaceRepo($this->pdo()),
+            new LinkResolver(new FakeFetcher([])),
         );
     }
 
