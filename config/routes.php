@@ -55,4 +55,8 @@ return static function (
     $router->add('GET',  '/admin/settings',      static fn(): Response => $admin->settings($currentUserId()));
     $router->add('POST', '/admin/settings',      static fn(): Response => $admin->saveSettings($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
     $router->add('POST', '/admin/settings/test', static fn(): Response => $admin->sendTest($currentUserId(), (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('GET',  '/admin/themes',        static fn(): Response => $admin->themes($currentUserId()));
+    $router->add('POST', '/admin/themes',        static fn(): Response => $admin->saveThemes($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('GET',  '/admin/moderation',    static fn(): Response => $admin->moderation($currentUserId(), (static fn($v) => is_string($v) ? $v : null)($_GET['q'] ?? null)));
+    $router->add('POST', '/admin/block',         static fn(): Response => $admin->blockFromAdmin($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 };

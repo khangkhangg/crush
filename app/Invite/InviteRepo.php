@@ -82,6 +82,23 @@ final class InviteRepo
         return $stmt->fetchAll();
     }
 
+    /** @return array<int,array> */
+    public function recent(int $limit = 50): array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM invites ORDER BY created_at DESC, id DESC LIMIT ?');
+        $stmt->bindValue(1, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return array_map([$this, 'cast'], $stmt->fetchAll());
+    }
+
+    /** @return array<int,array> */
+    public function searchByCrushEmail(string $email): array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM invites WHERE crush_email LIKE ? ORDER BY created_at DESC, id DESC LIMIT 50');
+        $stmt->execute(['%' . $email . '%']);
+        return array_map([$this, 'cast'], $stmt->fetchAll());
+    }
+
     private function one(string $sql, array $params): ?array
     {
         $stmt = $this->pdo->prepare($sql);

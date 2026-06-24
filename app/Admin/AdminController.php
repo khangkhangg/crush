@@ -74,6 +74,74 @@ final class AdminController
         return (new Response('', 302))->withHeader('Location', '/admin/settings');
     }
 
+    public function themes(?int $userId): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        $rows = [];
+        foreach ($this->themes->all() as $t) {
+            $opened = $this->events->count($t['key'], 'opened');
+            $done   = $this->events->count($t['key'], 'completed');
+            $rows[] = $t + [
+                'opened' => $opened, 'completed' => $done,
+                'rate' => $opened > 0 ? round($done / $opened * 100, 1) : 0.0,
+            ];
+        }
+        return $this->render('admin/themes', [
+            'title' => 'Themes', 'csrf' => $this->csrf->token(), 'themes' => $rows,
+        ]);
+    }
+
+    public function saveThemes(?int $userId, array $input, string $csrf): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        if (!$this->csrf->validate($csrf)) {
+            return $this->themes($userId)->withStatus(400);
+        }
+        $weights = (array) ($input['weight'] ?? []);
+        $active  = (array) ($input['active'] ?? []);
+        foreach ($this->themes->all() as $t) {
+            $key = $t['key'];
+            if (isset($weights[$key]) && is_numeric($weights[$key])) {
+                $this->themes->setWeight($key, (int) $weights[$key]);
+            }
+            $this->themes->setActive($key, isset($active[$key]));
+        }
+        return (new Response('', 302))->withHeader('Location', '/admin/themes');
+    }
+
+    public function moderation(?int $userId, ?string $search = null): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        $invites = $search !== null && $search !== ''
+            ? $this->invites->searchByCrushEmail($search)
+            : $this->invites->recent();
+        return $this->render('admin/moderation', [
+            'title' => 'Moderation', 'csrf' => $this->csrf->token(),
+            'invites' => $invites, 'blocks' => $this->blocks->recent(), 'search' => $search,
+        ]);
+    }
+
+    public function blockFromAdmin(?int $userId, array $input, string $csrf): Response
+    {
+        if ($this->requireAdmin($userId) === null) {
+            return $this->forbidden();
+        }
+        if ($this->csrf->validate($csrf)) {
+            $sid = (int) ($input['sender_id'] ?? 0);
+            $email = trim((string) ($input['crush_email'] ?? ''));
+            if ($sid > 0 && $email !== '') {
+                $this->blocks->block($sid, $email, 'admin');
+            }
+        }
+        return (new Response('', 302))->withHeader('Location', '/admin/moderation');
+    }
+
     public function sendTest(?int $userId, string $csrf): Response
     {
         if (($admin = $this->requireAdmin($userId)) === null) {
