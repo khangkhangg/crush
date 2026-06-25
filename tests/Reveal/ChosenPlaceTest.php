@@ -4,12 +4,14 @@ declare(strict_types=1);
 namespace Tests\Reveal;
 
 use App\Auth\UserRepo;
+use App\Core\ArrayStore;
+use App\Core\Csrf;
+use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
 use App\Reveal\RevealController;
-use App\Core\View;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
 
@@ -36,7 +38,7 @@ final class ChosenPlaceTest extends DatabaseTestCase
             'meal_choice' => 'dinner', 'chosen_place_id' => $pid,
         ]);
 
-        $ctrl = new RevealController($this->view(), $users, $invites, $responses, new IcsBuilder($clock), $places);
+        $ctrl = new RevealController($this->view(), $users, $invites, $responses, new IcsBuilder($clock), $places, new Csrf(new ArrayStore()));
         $body = $ctrl->show($sender['id'], $invite['public_token'])->body();
         $this->assertStringContainsString('Octo Tapas', $body);
         $this->assertStringContainsString('Tapas', $body);

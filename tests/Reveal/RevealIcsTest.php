@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Tests\Reveal;
 
 use App\Auth\UserRepo;
+use App\Core\ArrayStore;
+use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InvitePlaceRepo;
@@ -31,7 +33,8 @@ final class RevealIcsTest extends DatabaseTestCase
             new InviteRepo($this->pdo(), $this->clock),
             new ResponseRepo($this->pdo(), $this->clock),
             new IcsBuilder($this->clock),
-            new InvitePlaceRepo($this->pdo())
+            new InvitePlaceRepo($this->pdo()),
+            new Csrf(new ArrayStore())
         );
     }
 

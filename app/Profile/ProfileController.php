@@ -14,6 +14,7 @@ final class ProfileController
         private View $view,
         private Csrf $csrf,
         private UserRepo $users,
+        private AvatarStore $avatarStore,
     ) {}
 
     public function edit(?int $userId): Response
@@ -23,10 +24,11 @@ final class ProfileController
         }
         $user = $this->users->findById($userId);
         return Response::html($this->view->render('profile/edit', [
-            'title'   => 'Your profile',
-            'csrf'    => $this->csrf->token(),
-            'user'    => $user,
-            'avatars' => Avatars::keys(),
+            'title'    => 'Your profile',
+            'csrf'     => $this->csrf->token(),
+            'user'     => $user,
+            'avatars'  => Avatars::keys(),
+            'returnTo' => '',
         ]));
     }
 
@@ -38,24 +40,34 @@ final class ProfileController
         if (!$this->csrf->validate($csrf)) {
             $user = $this->users->findById($userId);
             return Response::html($this->view->render('profile/edit', [
-                'title'   => 'Your profile',
-                'csrf'    => $this->csrf->token(),
-                'user'    => $user,
-                'avatars' => Avatars::keys(),
-                'error'   => 'Your session expired. Please try again.',
+                'title'    => 'Your profile',
+                'csrf'     => $this->csrf->token(),
+                'user'     => $user,
+                'avatars'  => Avatars::keys(),
+                'returnTo' => '',
+                'error'    => 'Your session expired. Please try again.',
             ]), 400);
         }
 
+        $bio     = mb_substr(trim((string) ($input['bio'] ?? '')), 0, 280);
+        $contact = trim((string) ($input['contact'] ?? '')) ?: null;
+
+        $file = $input['_files']['avatar_file'] ?? ($_FILES['avatar_file'] ?? null);
+        $uploaded = is_array($file) && ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK
+            && $this->avatarStore->store($userId, (string) $file['tmp_name']);
+
         $avatar = (string) ($input['avatar_key'] ?? '');
-        if (!Avatars::isValid($avatar)) {
+        if ($uploaded) {
+            $avatar = 'custom';
+        } elseif ($avatar === 'custom' && $this->avatarStore->has($userId)) {
+            $avatar = 'custom';
+        } elseif (!Avatars::isValid($avatar)) {
             $avatar = Avatars::default();
         }
-        $bio      = mb_substr(trim((string) ($input['bio'] ?? '')), 0, 280);
-        $pronouns = trim((string) ($input['pronouns'] ?? '')) ?: null;
-        $contact  = trim((string) ($input['contact'] ?? '')) ?: null;
+        $this->users->saveProfile($userId, $avatar, null, $bio, $contact);
 
-        $this->users->saveProfile($userId, $avatar, $pronouns, $bio, $contact);
-
-        return (new Response('', 302))->withHeader('Location', '/');
+        $returnTo = (string) ($input['return_to'] ?? '');
+        $dest = (str_starts_with($returnTo, '/') && !str_starts_with($returnTo, '//')) ? $returnTo : '/';
+        return (new Response('', 302))->withHeader('Location', $dest);
     }
 }
