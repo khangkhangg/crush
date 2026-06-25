@@ -20,7 +20,9 @@ final class DashboardTest extends TestCase
         ]);
         $this->assertStringContainsString('Mia', $html);
         $this->assertStringContainsString('iv-badge', $html);                       // status badge
-        $this->assertStringContainsString('/invites/tok123/response', $html);       // view detail link
+        $this->assertStringContainsString('class="iv-view"', $html);                // enhanced view trigger
+        $this->assertStringContainsString('/invites/tok123/response', $html);       // real href (no-JS fallback)
+        $this->assertStringContainsString('class="iv-detail"', $html);              // inline expand panel
         $this->assertStringNotContainsString('https://crush.app/i/tok123', $html);  // raw URL not dumped
     }
 }
