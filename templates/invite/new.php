@@ -29,8 +29,8 @@
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
     </label>
     </div>
-    <label>Their name (optional)
-      <input type="text" name="crush_name" value="<?= $val('crush_name') ?>"
+    <label>Their name
+      <input type="text" name="crush_name" required value="<?= $val('crush_name') ?>"
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
     </label>
     <label>A little message (optional)
@@ -61,7 +61,9 @@
       .iv-other { margin-top:6px; }
       .iv-prev { font-size:12px; color:#7a5; margin:6px 0 0 2px; min-height:14px; }
       @media (max-width:560px){ .iv-opt-top { grid-template-columns:1fr auto; } .iv-opt-top .iv-u { grid-column:1 / -1; } }
-      #placePanel.hide { display:none; }
+      #placePanel { overflow:hidden; max-height:0; opacity:0; transition:max-height .35s ease, opacity .3s ease; }
+      #placePanel.show { max-height:1600px; opacity:1; }
+      @media (prefers-reduced-motion: reduce) { #placePanel { transition:none; } }
       .map-modal { position:fixed; inset:0; background:rgba(60,30,70,.45); display:none; align-items:center; justify-content:center; z-index:50; padding:16px; }
       .map-modal.show { display:flex; }
       .map-modal .card2 { background:#fff; border-radius:18px; padding:10px; width:min(92vw,560px); box-shadow:0 20px 50px rgba(90,42,82,.35); }
@@ -76,7 +78,7 @@
         <label><input type="radio" name="place_mode" value="open" checked><span>I'm open — they pick</span></label>
         <label><input type="radio" name="place_mode" value="focused"><span>Let's do a vibe</span></label>
       </div>
-      <div id="placePanel" class="hide" style="margin-top:8px;">
+      <div id="placePanel" style="margin-top:8px;">
         <select name="focus_vibe" style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
           <?php foreach (($meals ?? []) as $meal): ?>
             <option value="<?= $e($meal['key']) ?>"><?= $e($meal['label']) ?></option>
@@ -128,7 +130,7 @@
       var panel = document.getElementById('placePanel');
       function syncMode(){
         var m = document.querySelector('input[name="place_mode"]:checked');
-        if (panel) panel.classList.toggle('hide', !(m && m.value === 'focused'));
+        if (panel) panel.classList.toggle('show', !!(m && m.value === 'focused'));
       }
       document.querySelectorAll('input[name="place_mode"]').forEach(function(r){ r.addEventListener('change', syncMode); });
       syncMode();
