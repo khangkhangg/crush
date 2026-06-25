@@ -40,4 +40,5 @@
     <p class="reveal">They'll be in touch soon.</p>
   <?php endif; ?>
 </main>
+<?php include __DIR__ . '/../partials/analytics.php'; ?>
 </body></html>

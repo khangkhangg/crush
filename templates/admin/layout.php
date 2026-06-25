@@ -16,4 +16,5 @@
 <body><div class="wrap">
   <nav><a href="/admin">Dashboard</a><a href="/admin/settings">Settings</a><a href="/admin/themes">Themes</a><a href="/admin/moderation">Moderation</a><a href="/admin/templates">Templates</a><a href="/admin/share">Share</a></nav>
   <?= $body ?>
+<?php include __DIR__ . '/../partials/analytics.php'; ?>
 </div></body></html>

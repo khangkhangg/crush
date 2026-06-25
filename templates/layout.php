@@ -33,5 +33,6 @@
 </head>
 <body>
   <main class="card <?= $e($cardClass) ?>"><?= $body ?></main>
+<?php include __DIR__ . '/partials/analytics.php'; ?>
 </body>
 </html>

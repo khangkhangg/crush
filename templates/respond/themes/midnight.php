@@ -31,4 +31,5 @@
   <?php if ($message): ?><p class="mn-msg"><?= $e($message) ?></p><?php endif; ?>
   <?php include __DIR__ . '/../_form.php'; ?>
 </main>
+<?php include __DIR__ . '/../../partials/analytics.php'; ?>
 </body></html>

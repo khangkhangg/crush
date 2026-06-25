@@ -5,14 +5,14 @@
   <?php include __DIR__ . '/../partials/icons.php'; ?>
   <h1 style="text-wrap:balance;">Your invite is ready</h1>
   <p style="opacity:.8;"><?= $who !== '' ? 'Share this private link with <strong>' . $e($who) . '</strong>:' : 'Share your private invite link:' ?></p>
-  <div style="display:flex;gap:8px;align-items:center;">
+  <div style="display:flex;gap:8px;align-items:stretch;">
     <input id="lnk" readonly value="<?= $e($link) ?>"
            style="flex:1;min-width:0;padding:11px;border-radius:12px;border:1px solid #e7d4ff;font-size:13px;" onclick="this.select()">
     <button type="button" id="copyBtn" aria-label="Copy link"
-            style="padding:0 14px;border:0;border-radius:12px;background:#ff3d8b;color:#fff;font-weight:700;cursor:pointer;transition:transform .12s;">
+            style="display:flex;align-items:center;justify-content:center;padding:0 16px;border:0;border-radius:12px;background:#ff3d8b;color:#fff;font-weight:700;cursor:pointer;transition:transform .12s;">
       <svg width="18" height="18"><use href="#ic-copy"/></svg>
     </button>
-    <span id="copiedMsg" aria-live="polite" style="opacity:0;color:#16a34a;font-weight:700;font-size:13px;transition:opacity .2s;">Copied!</span>
+    <span id="copiedMsg" aria-live="polite" style="align-self:center;opacity:0;color:#16a34a;font-weight:700;font-size:13px;transition:opacity .2s;">Copied!</span>
   </div>
   <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
     <button type="button" id="nativeShare" hidden
