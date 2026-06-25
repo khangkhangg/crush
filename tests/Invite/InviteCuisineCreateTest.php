@@ -54,7 +54,7 @@ final class InviteCuisineCreateTest extends DatabaseTestCase
         $this->assertSame(200, $res->status());
         $this->assertStringContainsString('card--wide', $res->body());
         $this->assertStringContainsString('name="focus_vibe"', $res->body());
-        $this->assertStringContainsString('<datalist id="cuisines"', $res->body());
+        $this->assertStringContainsString('class="chips"', $res->body());
     }
 
     public function test_create_stores_cuisine(): void

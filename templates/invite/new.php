@@ -53,11 +53,14 @@
     <style>
       .iv-collapse { overflow:hidden; transition:max-height .3s ease, opacity .3s ease; max-height:120px; opacity:1; }
       .iv-collapse.hide { max-height:0; opacity:0; }
-      .iv-opt { display:grid; grid-template-columns:1.4fr 1fr 1.6fr auto; gap:8px; align-items:center; margin-top:8px; }
-      .iv-opt input { min-width:0; width:100%; padding:9px; border-radius:10px; border:1px solid #e7d4ff; }
-      .iv-opt .rm { border:0;background:none;color:#b3243b;cursor:pointer;font-size:18px;line-height:1; }
-      .iv-prev { font-size:12px; color:#7a5; margin:2px 0 0 2px; min-height:14px; }
-      @media (max-width:560px){ .iv-opt{ grid-template-columns:1fr 1fr; } .iv-opt .iv-u{ grid-column:1/-1; } }
+      .iv-opt { border:1px solid #eadcff; border-radius:14px; padding:10px; margin-top:8px; background:#fdfaff; }
+      .iv-opt-top { display:grid; grid-template-columns:1.5fr 1.5fr auto; gap:8px; align-items:center; }
+      .iv-opt-top input { min-width:0; }
+      .iv-opt .rm { border:0; background:none; color:#b3243b; cursor:pointer; font-size:18px; line-height:1; }
+      .iv-opt .chips { margin-top:8px; }
+      .iv-other { margin-top:6px; }
+      .iv-prev { font-size:12px; color:#7a5; margin:6px 0 0 2px; min-height:14px; }
+      @media (max-width:560px){ .iv-opt-top { grid-template-columns:1fr auto; } .iv-opt-top .iv-u { grid-column:1 / -1; } }
       #placePanel.hide { display:none; }
     </style>
     <fieldset style="border:0;padding:0;margin:0;">
@@ -74,20 +77,23 @@
         </select>
         <div id="optList">
           <div class="iv-opt">
-            <input type="text" name="opts[0][name]" placeholder="restaurant name">
-            <input type="text" name="opts[0][cuisine]" placeholder="cuisine" list="cuisines">
-            <input class="iv-u" type="text" name="opts[0][url]" placeholder="maps link (optional)" data-maps>
-            <button type="button" class="rm" aria-label="Remove">&times;</button>
+            <div class="iv-opt-top">
+              <input class="field" type="text" name="opts[0][name]" placeholder="restaurant name">
+              <input class="field iv-u" type="text" name="opts[0][url]" placeholder="maps link (optional)" data-maps>
+              <button type="button" class="rm" aria-label="Remove">&times;</button>
+            </div>
+            <div class="chips">
+              <?php foreach (['Italian','Japanese','Korean','Vietnamese','Thai','Chinese','Mexican','Indian','American','French','Dessert'] as $c): ?>
+                <label class="chip"><input type="radio" name="opts[0][cuisine]" value="<?= $e($c) ?>"><span><?= $e($c) ?></span></label>
+              <?php endforeach; ?>
+              <label class="chip"><input type="radio" name="opts[0][cuisine]" value="__other__" data-other><span>Other</span></label>
+            </div>
+            <input class="field iv-other" type="text" name="opts[0][cuisine_custom]" placeholder="cuisine" hidden>
           </div>
         </div>
         <button type="button" id="addPlace" style="margin-top:6px;padding:8px 12px;border:1px dashed #e7d4ff;border-radius:10px;background:#fff;color:#ff3d8b;font-weight:600;cursor:pointer;">+ Add another place</button>
       </div>
     </fieldset>
-    <datalist id="cuisines">
-      <?php foreach (['Italian','Japanese','Korean','Vietnamese','Thai','Chinese','Mexican','Indian','American','French','Mediterranean','BBQ','Vegan','Dessert'] as $c): ?>
-        <option value="<?= $e($c) ?>"></option>
-      <?php endforeach; ?>
-    </datalist>
     <button type="submit"
             style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;cursor:pointer;">
       Create my invite
@@ -116,13 +122,25 @@
 
       var list = document.getElementById('optList');
       var add = document.getElementById('addPlace');
+      function syncOther(scope){
+        (scope || document).querySelectorAll('.iv-opt').forEach(function(opt){
+          var other = opt.querySelector('input[data-other]');
+          var field = opt.querySelector('.iv-other');
+          if (field) field.hidden = !(other && other.checked);
+        });
+      }
+      document.addEventListener('change', function(e){
+        if (e.target && e.target.name && /\[cuisine\]$/.test(e.target.name)) syncOther(e.target.closest('.iv-opt'));
+      });
+      syncOther();
       if (add && list) add.addEventListener('click', function(){
         var n = list.children.length;
         var row = list.children[0].cloneNode(true);
         row.querySelectorAll('input').forEach(function(inp){
-          inp.value = '';
+          if (inp.type === 'radio') inp.checked = false; else inp.value = '';
           inp.name = inp.name.replace(/opts\[\d+\]/, 'opts[' + n + ']');
         });
+        var field = row.querySelector('.iv-other'); if (field) field.hidden = true;
         var pv = row.querySelector('.iv-prev'); if (pv) pv.remove();
         list.appendChild(row);
       });
