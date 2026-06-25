@@ -72,6 +72,10 @@ return static function (
     $router->add('POST', '/invites',       static fn(): Response => $invite->create($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
     $router->add('GET',  '/i/{token}/created', static fn(string $token): Response => $invite->showCreated($currentUserId(), $token));
 
+    $router->add('GET', '/i/{token}/maps-preview', static fn(string $token): Response => $respond->mapsPreview(
+        $token, is_string($_GET['url'] ?? null) ? $_GET['url'] : ''
+    ));
+
     $router->add('GET',  '/i/{token}', static fn(string $token): Response => $respond->open($token));
     $router->add('POST', '/i/{token}', static fn(string $token): Response => $respond->submit(
         $token, $_POST,

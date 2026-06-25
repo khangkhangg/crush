@@ -37,6 +37,18 @@ final class RespondController
         private InvitePlaceRepo $places,
     ) {}
 
+    public function mapsPreview(string $token, string $url): Response
+    {
+        if ($this->invites->findByToken($token) === null) {
+            return (new Response((string) json_encode(['error' => 'not_found']), 404))
+                ->withHeader('Content-Type', 'application/json');
+        }
+        $url = trim($url);
+        $r = $url === '' ? ['name' => null, 'address' => null] : $this->maps->resolve($url);
+        return (new Response((string) json_encode(['name' => $r['name'], 'address' => $r['address']]), 200))
+            ->withHeader('Content-Type', 'application/json');
+    }
+
     public function open(string $token): Response
     {
         $invite = $this->invites->findByToken($token);
