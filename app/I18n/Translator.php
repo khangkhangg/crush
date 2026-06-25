@@ -37,4 +37,12 @@ final class Translator
         }
         return $out;
     }
+
+    public function upsert(string $lang, string $key, string $value): void
+    {
+        $this->pdo->prepare(
+            'INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE value = VALUES(value)'
+        )->execute([$lang, $key, $value]);
+    }
 }

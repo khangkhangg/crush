@@ -19,7 +19,7 @@ use App\Theme\ThemeRepo;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
 
-final class AdminShareCreateTest extends DatabaseTestCase
+final class AdminLanguagesTest extends DatabaseTestCase
 {
     private FrozenClock $clock;
 
@@ -43,44 +43,35 @@ final class AdminShareCreateTest extends DatabaseTestCase
 
     private function adminId(): int
     {
-        $u = (new UserRepo($this->pdo(), $this->clock))->create('admin@x.test', 'Boss', 'magic');
+        $u = (new UserRepo($this->pdo(), $this->clock))->create('a@x.test', 'B', 'magic');
         $this->pdo()->prepare('UPDATE users SET is_admin = 1 WHERE id = ?')->execute([$u['id']]);
         return $u['id'];
     }
 
-    public function test_create_adds_target(): void
+    public function test_list_requires_admin(): void
+    {
+        $this->assertSame(403, $this->controller(new Csrf(new ArrayStore()))->languages(null)->status());
+    }
+
+    public function test_list_shows_languages(): void
+    {
+        $res = $this->controller(new Csrf(new ArrayStore()))->languages($this->adminId());
+        $this->assertSame(200, $res->status());
+        $this->assertStringContainsString('Tiếng Việt', $res->body());
+    }
+
+    public function test_save_upserts_translation(): void
     {
         $csrf = new Csrf(new ArrayStore());
-        $ctrl = $this->controller($csrf);
-        $res = $ctrl->createShare($this->adminId(), [
-            'key' => 'reddit', 'label' => 'Reddit', 'icon' => 'ic-share',
-            'url_template' => 'https://www.reddit.com/submit?url={url}', 'enabled' => '1',
+        $res = $this->controller($csrf)->saveLanguage($this->adminId(), [
+            'lang' => 'vi', 'keys' => ['Start'], 'values' => ['Bắt đầu'],
         ], $csrf->token());
         $this->assertSame(302, $res->status());
-        $this->assertNotNull((new ShareTargetRepo($this->pdo()))->getExact('reddit'));
+        $this->assertSame('Bắt đầu', (new Translator($this->pdo(), 'vi'))->t('Start'));
     }
 
-    public function test_create_rejects_unsafe(): void
+    public function test_save_rejects_bad_csrf(): void
     {
-        $csrf = new Csrf(new ArrayStore());
-        $res = $this->controller($csrf)->createShare($this->adminId(), [
-            'key' => 'evil', 'label' => 'Evil', 'icon' => 'ic-share', 'url_template' => 'javascript:alert(1)',
-        ], $csrf->token());
-        $this->assertSame(422, $res->status());
-    }
-
-    public function test_create_rejects_duplicate_key(): void
-    {
-        $csrf = new Csrf(new ArrayStore());
-        $res = $this->controller($csrf)->createShare($this->adminId(), [
-            'key' => 'whatsapp', 'label' => 'Dup', 'icon' => 'ic-whatsapp', 'url_template' => 'https://wa.me/?text={url}',
-        ], $csrf->token());
-        $this->assertSame(422, $res->status());
-    }
-
-    public function test_create_requires_admin(): void
-    {
-        $csrf = new Csrf(new ArrayStore());
-        $this->assertSame(403, $this->controller($csrf)->createShare(null, [], $csrf->token())->status());
+        $this->assertSame(400, $this->controller(new Csrf(new ArrayStore()))->saveLanguage($this->adminId(), ['lang' => 'vi'], 'wrong')->status());
     }
 }

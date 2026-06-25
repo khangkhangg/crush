@@ -125,6 +125,14 @@ return static function (
         $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
     ));
 
+    $router->add('GET',  '/admin/languages',      static fn(): Response => $admin->languages($currentUserId()));
+    $router->add('GET',  '/admin/languages/edit', static fn(): Response => $admin->editLanguage(
+        $currentUserId(), (static fn($v) => is_string($v) ? $v : '')($_GET['lang'] ?? '')
+    ));
+    $router->add('POST', '/admin/languages',      static fn(): Response => $admin->saveLanguage(
+        $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
+    ));
+
     $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 

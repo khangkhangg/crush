@@ -8,6 +8,7 @@ use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
+use App\I18n\Translator;
 use App\Invite\InviteRepo;
 use App\Mail\EmailTemplateRepo;
 use App\Security\BlockRepo;
@@ -37,7 +38,8 @@ final class AdminSettingsTest extends DatabaseTestCase
             $view, $csrf, new UserRepo($this->pdo(), $clock), new SettingsRepo($this->pdo()),
             new ThemeRepo($this->pdo()), new AbEventRepo($this->pdo(), $clock),
             new InviteRepo($this->pdo(), $clock), new BlockRepo($this->pdo(), $clock), 'http://localhost',
-            new EmailTemplateRepo($this->pdo()), new ShareTargetRepo($this->pdo())
+            new EmailTemplateRepo($this->pdo()), new ShareTargetRepo($this->pdo()),
+            new Translator($this->pdo(), 'en')
         );
     }
 

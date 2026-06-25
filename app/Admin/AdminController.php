@@ -7,6 +7,8 @@ use App\Auth\UserRepo;
 use App\Core\Csrf;
 use App\Core\Response;
 use App\Core\View;
+use App\I18n\Languages;
+use App\I18n\Translator;
 use App\Invite\InviteRepo;
 use App\Mail\Email;
 use App\Mail\EmailTemplateRepo;
@@ -45,6 +47,7 @@ final class AdminController
         private string $appUrl,
         private EmailTemplateRepo $emailTemplates,
         private ShareTargetRepo $shareTargets,
+        private Translator $translator,
     ) {}
 
     public function dashboard(?int $userId): Response
@@ -297,6 +300,41 @@ final class AdminController
         }
         $this->shareTargets->update($key, $label, $template, $enabled);
         return (new Response('', 302))->withHeader('Location', '/admin/share');
+    }
+
+    public function languages(?int $userId): Response
+    {
+        if ($this->requireAdmin($userId) === null) { return $this->forbidden(); }
+        return $this->render('admin/languages', ['title' => 'Languages', 'languages' => Languages::ALL]);
+    }
+
+    public function editLanguage(?int $userId, string $lang): Response
+    {
+        if ($this->requireAdmin($userId) === null) { return $this->forbidden(); }
+        if (!\App\Core\Locale::isSupported($lang)) { $lang = 'en'; }
+        return $this->render('admin/language_edit', [
+            'title' => 'Edit ' . Languages::name($lang), 'csrf' => $this->csrf->token(),
+            'lang' => $lang, 'rows' => $this->translator->all($lang),
+        ]);
+    }
+
+    public function saveLanguage(?int $userId, array $input, string $csrf): Response
+    {
+        if ($this->requireAdmin($userId) === null) { return $this->forbidden(); }
+        if (!$this->csrf->validate($csrf)) {
+            return $this->render('admin/languages', ['title' => 'Languages', 'languages' => Languages::ALL, 'flash' => 'Session expired, please retry.'])->withStatus(400);
+        }
+        $lang = (string) ($input['lang'] ?? '');
+        if (\App\Core\Locale::isSupported($lang)) {
+            $keys = (array) ($input['keys'] ?? []);
+            $values = (array) ($input['values'] ?? []);
+            foreach ($keys as $i => $k) {
+                $k = trim((string) $k);
+                $v = trim((string) ($values[$i] ?? ''));
+                if ($k !== '' && $v !== '') { $this->translator->upsert($lang, $k, $v); }
+            }
+        }
+        return (new Response('', 302))->withHeader('Location', '/admin/languages/edit?lang=' . urlencode($lang));
     }
 
     private function requireAdmin(?int $userId): ?array

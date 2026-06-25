@@ -115,7 +115,7 @@ $respondCtrl  = new RespondController(
     $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman, $crushOnboarder, $invitePlaceRepo
 );
 
-$adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'), $emailTemplates, $shareTargets);
+$adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'), $emailTemplates, $shareTargets, $translator);
 $adminAuthCtrl = new AdminAuthController($view, $csrf, $users, $session, new RateLimiter($pdo, $clock));
 $avatarStore = new AvatarStore(dirname(__DIR__) . '/storage/avatars');
 $avatarCtrl  = new AvatarController($avatarStore);
