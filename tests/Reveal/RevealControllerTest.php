@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Tests\Reveal;
 
 use App\Auth\UserRepo;
+use App\Core\ArrayStore;
+use App\Core\Csrf;
 use App\Core\View;
 use App\Ics\IcsBuilder;
 use App\Invite\InvitePlaceRepo;
@@ -33,7 +35,8 @@ final class RevealControllerTest extends DatabaseTestCase
             new InviteRepo($this->pdo(), $this->clock),
             new ResponseRepo($this->pdo(), $this->clock),
             new IcsBuilder($this->clock),
-            new InvitePlaceRepo($this->pdo())
+            new InvitePlaceRepo($this->pdo()),
+            new Csrf(new ArrayStore())
         );
     }
 
@@ -92,7 +95,7 @@ final class RevealControllerTest extends DatabaseTestCase
         // Teaser must NOT leak the crush's actual choices.
         $this->assertStringNotContainsString('dinner', $res->body());
         $this->assertStringNotContainsString('Tartine', $res->body());
-        $this->assertStringContainsString('/profile', $res->body()); // CTA to complete profile
+        $this->assertStringContainsString('action="/profile"', $res->body()); // inline form
     }
 
     public function test_response_and_complete_profile_reveals(): void

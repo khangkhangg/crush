@@ -1,5 +1,5 @@
-<?php $state = $state ?? 'waiting'; $invite = $invite ?? null; $response = $response ?? null; $chosenPlace = $chosenPlace ?? null; ?>
-<?php $content = function () use ($e, $state, $invite, $response, $chosenPlace) {
+<?php $state = $state ?? 'waiting'; $invite = $invite ?? null; $response = $response ?? null; $chosenPlace = $chosenPlace ?? null; $user = $user ?? []; $avatars = $avatars ?? []; $csrf = $csrf ?? ''; $returnTo = $returnTo ?? ''; ?>
+<?php $content = function () use ($e, $state, $invite, $response, $chosenPlace, $user, $avatars, $csrf, $returnTo) {
   $crush = $invite['crush_name'] ?? ($invite['crush_email'] ?? 'your crush');
   ob_start();
   if ($state === 'missing'): ?>
@@ -8,9 +8,10 @@
     <h1 style="text-wrap:balance;">Waiting on <?= $e($crush) ?></h1>
     <p style="opacity:.85;">No response yet. We'll let you know the moment they answer.</p>
   <?php elseif ($state === 'locked'): ?>
+    <?php include __DIR__ . '/../partials/avatars.php'; ?>
     <h1 style="text-wrap:balance;"><?= $e($crush) ?> answered!</h1>
-    <p style="opacity:.85;">Complete your profile to unlock what they picked and add it to your calendar.</p>
-    <a href="/profile" style="display:inline-block;margin-top:10px;padding:12px 18px;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;text-decoration:none;">Complete my profile</a>
+    <p style="opacity:.85;">Add a few cute details so they know it's really you — then you'll see what they picked.</p>
+    <?php include __DIR__ . '/../profile/_form.php'; ?>
   <?php else: /* reveal */
     $anon = (int) ($invite['is_anonymous'] ?? 0) === 1;
     $place = trim((string) (($response['pickup_name'] ?? '') . ' ' . ($response['pickup_address'] ?? '')));
