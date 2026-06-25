@@ -33,6 +33,7 @@ final class AdminController
     private const SETTING_KEYS = [
         'mail_driver', 'from_email', 'from_name',
         'resend_api_key', 'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_encryption',
+        'mail_backup', 'mailjet_api_key', 'mailjet_secret_key',
         'telegram_bot_token', 'telegram_chat_id',
         'google_client_id', 'google_client_secret', 'google_redirect_uri',
         'invite_expiry_days',

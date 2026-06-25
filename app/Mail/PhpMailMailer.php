@@ -7,6 +7,8 @@ final class PhpMailMailer implements Mailer
 {
     public function __construct(private string $fromEmail, private string $fromName) {}
 
+    public function verify(): void {}
+
     public function send(Email $email): void
     {
         $boundary = 'crush_' . bin2hex(random_bytes(8));

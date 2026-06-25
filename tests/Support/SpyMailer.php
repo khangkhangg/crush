@@ -11,6 +11,8 @@ final class SpyMailer implements Mailer
     /** @var Email[] */
     public array $sent = [];
 
+    public function verify(): void {}
+
     public function send(Email $email): void
     {
         $this->sent[] = $email;
