@@ -24,7 +24,7 @@
 <?php include __DIR__ . '/../../partials/icons.php'; ?>
 <main class="ll-letter">
   <div class="ll-seal"><svg><use href="#ic-heart"/></svg></div>
-  <p class="ll-kicker"><?= $e($senderLabel) ?> requests your company</p>
+  <p class="ll-kicker"><?= $e($senderLabel) ?> <?= $e($t('requests your company')) ?></p>
   <?php if ($message): ?><p class="ll-msg"><?= $e($message) ?></p><?php endif; ?>
   <?php include __DIR__ . '/../_form.php'; ?>
 </main>

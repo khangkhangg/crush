@@ -12,7 +12,7 @@
   <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
   <input type="hidden" name="return_to" value="<?= $e($returnTo) ?>">
   <fieldset style="border:0;padding:0;margin:0;">
-    <legend style="font-size:13px;font-weight:600;opacity:.7;">Pick an avatar</legend>
+    <legend style="font-size:13px;font-weight:600;opacity:.7;"><?= $e($t('Pick an avatar')) ?></legend>
     <div class="av-grid">
       <?php if ($cur === 'custom'): ?>
         <label><input type="radio" name="avatar_key" value="custom" checked><span class="av-pick"><img src="/avatar/<?= (int) ($user['id'] ?? 0) ?>" alt="your photo"></span></label>
@@ -22,15 +22,15 @@
       <?php endforeach; ?>
     </div>
     <label style="display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:#ff3d8b;cursor:pointer;">
-      Upload your own photo
+      <?= $e($t('Upload your own photo')) ?>
       <input type="file" name="avatar_file" accept="image/*" style="display:none;">
     </label>
   </fieldset>
-  <label style="font-size:13px;font-weight:600;opacity:.7;">About you
-    <input class="field" type="text" name="bio" maxlength="280" value="<?= $e($user['bio'] ?? '') ?>" placeholder="i'm a sucker for tacos and bad puns">
+  <label style="font-size:13px;font-weight:600;opacity:.7;"><?= $e($t('About you')) ?>
+    <input class="field" type="text" name="bio" maxlength="280" value="<?= $e($user['bio'] ?? '') ?>" placeholder="<?= $e($t('i\'m a sucker for tacos and bad puns')) ?>">
   </label>
-  <label style="font-size:13px;font-weight:600;opacity:.7;">Contact (optional)
-    <input class="field" type="text" name="contact" value="<?= $e($user['contact'] ?? '') ?>" placeholder="phone or @handle">
+  <label style="font-size:13px;font-weight:600;opacity:.7;"><?= $e($t('Contact (optional)')) ?>
+    <input class="field" type="text" name="contact" value="<?= $e($user['contact'] ?? '') ?>" placeholder="<?= $e($t('phone or @handle')) ?>">
   </label>
-  <button type="submit" style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;font-size:16px;cursor:pointer;">Save my profile</button>
+  <button type="submit" style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;font-size:16px;cursor:pointer;"><?= $e($t('Save my profile')) ?></button>
 </form>

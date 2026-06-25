@@ -23,7 +23,7 @@
 <?php include __DIR__ . '/../../partials/lang_switcher.php'; ?>
 <?php include __DIR__ . '/../../partials/icons.php'; ?>
 <main class="bg-page">
-  <h1 class="bg-title"><?= $e($senderLabel) ?> has a crush on u</h1>
+  <h1 class="bg-title"><?= $e($senderLabel) ?> <?= $e($t('has a crush on u')) ?></h1>
   <?php if ($message): ?><p class="bg-msg"><?= $e($message) ?></p><?php endif; ?>
   <?php include __DIR__ . '/../_form.php'; ?>
 </main>

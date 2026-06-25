@@ -28,7 +28,7 @@
 <span class="mn-star" style="top:22%;left:44%"></span><span class="mn-star" style="top:6%;left:60%"></span>
 <main class="mn-card">
   <div class="mn-hero"><svg><use href="#ic-moon"/></svg></div>
-  <h1 class="mn-title"><?= $e($senderLabel) ?> has a crush on you</h1>
+  <h1 class="mn-title"><?= $e($senderLabel) ?> <?= $e($t('has a crush on you')) ?></h1>
   <?php if ($message): ?><p class="mn-msg"><?= $e($message) ?></p><?php endif; ?>
   <?php include __DIR__ . '/../_form.php'; ?>
 </main>
