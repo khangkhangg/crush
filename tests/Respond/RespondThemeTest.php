@@ -71,7 +71,8 @@ final class RespondThemeTest extends DatabaseTestCase
             $res = $ctrl->open($this->invite(false, "sue{$idx}@x.test")['public_token']);
             $this->assertSame(200, $res->status());
             $this->assertStringContainsString($marker, $res->body(), "theme class for index $idx");
-            $this->assertStringContainsString('name="chosen_start"', $res->body());
+            $this->assertStringContainsString('name="chosen_date"', $res->body());
+            $this->assertStringContainsString('name="chosen_time"', $res->body());
             $this->assertStringContainsString('name="meal_choice"', $res->body());
         }
     }
