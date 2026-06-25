@@ -73,5 +73,6 @@
       <?php endif; ?>
     </div>
   </main>
+<?php include __DIR__ . '/../partials/analytics.php'; ?>
 </body>
 </html>
