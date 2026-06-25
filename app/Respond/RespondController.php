@@ -112,7 +112,13 @@ final class RespondController
             return $this->reshow($invite, $theme, 'Your session expired. Please try again.', 400);
         }
 
-        $start = $this->parseDate((string) ($input['chosen_start'] ?? ''));
+        $rawStart = trim((string) ($input['chosen_start'] ?? ''));
+        if ($rawStart === '') {
+            $d = trim((string) ($input['chosen_date'] ?? ''));
+            $t = trim((string) ($input['chosen_time'] ?? ''));
+            $rawStart = ($d !== '' && $t !== '') ? $d . ' ' . $t : '';
+        }
+        $start = $this->parseDate($rawStart);
         if ($start === null) {
             return $this->reshow($invite, $theme, 'Please pick a day and time.', 422);
         }

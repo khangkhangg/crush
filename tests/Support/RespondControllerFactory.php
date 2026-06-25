@@ -23,7 +23,7 @@ use App\Theme\ThemeRepo;
 
 final class RespondControllerFactory
 {
-    public static function make(\PDO $pdo, FrozenClock $clock): RespondController
+    public static function make(\PDO $pdo, FrozenClock $clock, ?Csrf $csrf = null): RespondController
     {
         $view = new View(dirname(__DIR__, 2) . '/templates');
         $invites = new InviteRepo($pdo, $clock);
@@ -31,7 +31,7 @@ final class RespondControllerFactory
         $postman = new Postman(new SpyMailer(), new IcsBuilder($clock), new EmailTemplateRepo($pdo), 'http://localhost');
         return new RespondController(
             $view,
-            new Csrf(new ArrayStore()),
+            $csrf ?? new Csrf(new ArrayStore()),
             $invites,
             new ResponseRepo($pdo, $clock),
             $users,

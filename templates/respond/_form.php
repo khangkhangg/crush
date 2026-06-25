@@ -3,8 +3,16 @@
 <?php if ($error): ?><p class="rf-error" role="alert"><?= $e($error) ?></p><?php endif; ?>
 <form method="post" action="/i/<?= $e($token) ?>" class="rf-form">
   <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
-  <label class="rf-field">Pick a day &amp; time
-    <input type="datetime-local" name="chosen_start" required>
+  <label class="rf-field">Pick a day
+    <input type="date" name="chosen_date" required>
+  </label>
+  <div class="rf-tod" role="group" aria-label="Time of day" style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 6px;">
+    <button type="button" class="rf-tod-b" data-time="09:00">Morning</button>
+    <button type="button" class="rf-tod-b" data-time="14:00">Afternoon</button>
+    <button type="button" class="rf-tod-b" data-time="19:00">Evening</button>
+  </div>
+  <label class="rf-field">at
+    <input type="time" name="chosen_time" required>
   </label>
 <?php if ($focusVibe !== null): ?>
   <input type="hidden" name="meal_choice" value="<?= $e($focusVibe['key']) ?>">
@@ -64,6 +72,14 @@
 </form>
 <script>
 (function(){
+  var timeInput = document.querySelector('input[name="chosen_time"]');
+  document.querySelectorAll('.rf-tod-b').forEach(function(b){
+    b.addEventListener('click', function(){
+      if (timeInput) timeInput.value = b.getAttribute('data-time');
+      document.querySelectorAll('.rf-tod-b').forEach(function(x){ x.removeAttribute('data-on'); });
+      b.setAttribute('data-on', '1');
+    });
+  });
   var p = document.querySelector('.rf-place');
   if (!p) return;
   document.querySelectorAll('input[name="meal_choice"]').forEach(function(r){
