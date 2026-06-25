@@ -9,7 +9,7 @@ $badge = static function (string $status): array {
     'closed'         => ['Closed', '#9aa0a6'],
   ][$status] ?? [ucfirst(str_replace('_', ' ', $status)), '#9aa0a6'];
 };
-$content = function () use ($e, $invites, $appUrl, $badge) { ob_start(); ?>
+$content = function () use ($e, $t, $invites, $appUrl, $badge) { ob_start(); ?>
   <style>
     .iv-card { border-radius:16px; background:#faf2ff; border:1px solid #eadcff; overflow:hidden; }
     .iv-head { padding:14px 16px; display:flex; align-items:center; gap:12px; }
@@ -19,13 +19,13 @@ $content = function () use ($e, $invites, $appUrl, $badge) { ob_start(); ?>
     .iv-detail .inner h1 { font-size:20px; margin:.2em 0; }
     @media (prefers-reduced-motion: reduce) { .iv-detail { transition:none; } }
   </style>
-  <h1 style="text-wrap:balance;">Your invites</h1>
+  <h1 style="text-wrap:balance;"><?= $e($t('Your invites')) ?></h1>
   <a href="/invites/new"
      style="display:inline-block;padding:12px 18px;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;text-decoration:none;">
-    Send a new crush invite
+    <?= $e($t('Send a new crush invite')) ?>
   </a>
   <?php if (empty($invites)): ?>
-    <p style="opacity:.75;margin-top:20px;">No invites yet. Send your first one above.</p>
+    <p style="opacity:.75;margin-top:20px;"><?= $e($t('No invites yet. Send your first one above.')) ?></p>
   <?php else: ?>
     <ul style="list-style:none;padding:0;margin-top:20px;display:flex;flex-direction:column;gap:12px;">
       <?php foreach ($invites as $inv):
@@ -34,15 +34,15 @@ $content = function () use ($e, $invites, $appUrl, $badge) { ob_start(); ?>
         <li class="iv-card">
           <div class="iv-head">
             <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;"><?= $e($inv['crush_name'] ?: $inv['crush_email'] ?: 'A secret crush') ?></div>
-              <span class="iv-badge" style="display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:#fff;background:<?= $e($color) ?>;padding:2px 9px;border-radius:999px;"><?= $e($label) ?></span>
+              <div style="font-weight:700;"><?= $e($inv['crush_name'] ?: ($inv['crush_email'] ?: $t('A secret crush'))) ?></div>
+              <span class="iv-badge" style="display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:#fff;background:<?= $e($color) ?>;padding:2px 9px;border-radius:999px;"><?= $e($t($label)) ?></span>
             </div>
             <?php if ($answered): ?>
               <a class="iv-view" href="/invites/<?= $e($inv['public_token']) ?>/response"
-                 style="padding:9px 14px;border-radius:12px;background:#ff3d8b;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap;">View</a>
+                 style="padding:9px 14px;border-radius:12px;background:#ff3d8b;color:#fff;font-weight:700;text-decoration:none;white-space:nowrap;"><?= $e($t('View')) ?></a>
             <?php else: ?>
               <button type="button" class="iv-copy" data-link="<?= $e(rtrim($appUrl, '/') . '/i/' . $inv['public_token']) ?>"
-                 style="padding:9px 14px;border-radius:12px;border:1px solid #e7d4ff;background:#fff;color:#5a2a52;font-weight:600;cursor:pointer;white-space:nowrap;">Copy link</button>
+                 style="padding:9px 14px;border-radius:12px;border:1px solid #e7d4ff;background:#fff;color:#5a2a52;font-weight:600;cursor:pointer;white-space:nowrap;"><?= $e($t('Copy link')) ?></button>
             <?php endif; ?>
           </div>
           <?php if ($answered): ?><div class="iv-detail"></div><?php endif; ?>
