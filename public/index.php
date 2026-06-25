@@ -33,6 +33,8 @@ use App\Mail\Postman;
 use App\Maps\CurlFetcher;
 use App\Maps\LinkResolver;
 use App\Maps\MapsController;
+use App\Profile\AvatarController;
+use App\Profile\AvatarStore;
 use App\Profile\ProfileController;
 use App\Respond\CrushOnboarder;
 use App\Respond\RespondController;
@@ -110,12 +112,14 @@ $respondCtrl  = new RespondController(
 
 $adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'), $emailTemplates, $shareTargets);
 $adminAuthCtrl = new AdminAuthController($view, $csrf, $users, $session, new RateLimiter($pdo, $clock));
-$profileCtrl = new ProfileController($view, $csrf, $users);
+$avatarStore = new AvatarStore(dirname(__DIR__) . '/storage/avatars');
+$avatarCtrl  = new AvatarController($avatarStore);
+$profileCtrl = new ProfileController($view, $csrf, $users, $avatarStore);
 $landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $postman, (string) $config->get('app_url', 'http://localhost'));
 $revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock), $invitePlaceRepo);
 
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl, $avatarCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');

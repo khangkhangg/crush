@@ -14,6 +14,7 @@ final class ProfileController
         private View $view,
         private Csrf $csrf,
         private UserRepo $users,
+        private AvatarStore $avatarStore,
     ) {}
 
     public function edit(?int $userId): Response
@@ -50,8 +51,17 @@ final class ProfileController
 
         $bio     = mb_substr(trim((string) ($input['bio'] ?? '')), 0, 280);
         $contact = trim((string) ($input['contact'] ?? '')) ?: null;
-        $avatar  = (string) ($input['avatar_key'] ?? '');
-        if (!Avatars::isValid($avatar)) {
+
+        $file = $input['_files']['avatar_file'] ?? ($_FILES['avatar_file'] ?? null);
+        $uploaded = is_array($file) && ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK
+            && $this->avatarStore->store($userId, (string) $file['tmp_name']);
+
+        $avatar = (string) ($input['avatar_key'] ?? '');
+        if ($uploaded) {
+            $avatar = 'custom';
+        } elseif ($avatar === 'custom' && $this->avatarStore->has($userId)) {
+            $avatar = 'custom';
+        } elseif (!Avatars::isValid($avatar)) {
             $avatar = Avatars::default();
         }
         $this->users->saveProfile($userId, $avatar, null, $bio, $contact);

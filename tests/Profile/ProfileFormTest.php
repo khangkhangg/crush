@@ -7,6 +7,7 @@ use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
+use App\Profile\AvatarStore;
 use App\Profile\ProfileController;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
@@ -23,7 +24,7 @@ final class ProfileFormTest extends DatabaseTestCase
 
     private function controller(Csrf $csrf): ProfileController
     {
-        return new ProfileController(new View(\dirname(__DIR__, 2) . '/templates'), $csrf, new UserRepo($this->pdo(), $this->clock));
+        return new ProfileController(new View(\dirname(__DIR__, 2) . '/templates'), $csrf, new UserRepo($this->pdo(), $this->clock), new AvatarStore(sys_get_temp_dir() . '/crush_av_test'));
     }
 
     public function test_form_has_no_pronouns_and_has_selected_indicator(): void

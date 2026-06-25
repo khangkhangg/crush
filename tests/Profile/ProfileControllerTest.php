@@ -8,6 +8,7 @@ use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
 use App\Profile\Avatars;
+use App\Profile\AvatarStore;
 use App\Profile\ProfileController;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\FrozenClock;
@@ -20,7 +21,7 @@ final class ProfileControllerTest extends DatabaseTestCase
     {
         $this->clock = new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'));
         $view = new View(\dirname(__DIR__, 2) . '/templates');
-        return new ProfileController($view, $csrf, new UserRepo($this->pdo(), $this->clock));
+        return new ProfileController($view, $csrf, new UserRepo($this->pdo(), $this->clock), new AvatarStore(sys_get_temp_dir() . '/crush_av_test'));
     }
 
     private function user(): int
