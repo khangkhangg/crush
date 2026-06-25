@@ -16,11 +16,13 @@
   <?php if ($error): ?><p role="alert" style="color:#b3243b;"><?= $e($error) ?></p><?php endif; ?>
   <form method="post" action="/invites" style="display:flex;flex-direction:column;gap:12px;">
     <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
-    <fieldset style="border:0;padding:0;margin:0;display:flex;gap:16px;flex-wrap:wrap;">
-      <legend style="font-size:13px;font-weight:600;opacity:.7;">How will you send it?</legend>
-      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="delivery" value="email" checked> Email it to them</label>
-      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="delivery" value="link"> I will share the link myself</label>
-    </fieldset>
+    <div>
+      <span class="label">How will you send it?</span>
+      <div class="seg" role="radiogroup" aria-label="How will you send it?">
+        <label><input type="radio" name="delivery" value="email" checked><span>Email it to them</span></label>
+        <label><input type="radio" name="delivery" value="link"><span>I'll share the link</span></label>
+      </div>
+    </div>
     <div id="emailWrap" class="iv-collapse">
     <label>Their email
       <input type="email" id="crush_email" name="crush_email" value="<?= $val('crush_email') ?>"
@@ -35,12 +37,13 @@
       <textarea name="message" rows="3"
                 style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;"><?= $val('message') ?></textarea>
     </label>
-    <label>When should they pick?
-      <select name="date_mode" style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
-        <option value="instant">Let them pick any time (final)</option>
-        <option value="confirm">They propose, I confirm</option>
-      </select>
-    </label>
+    <div>
+      <span class="label">When should they pick?</span>
+      <div class="seg" role="radiogroup" aria-label="When should they pick?">
+        <label><input type="radio" name="date_mode" value="instant" checked><span>Any time (final)</span></label>
+        <label><input type="radio" name="date_mode" value="confirm"><span>They propose, I confirm</span></label>
+      </div>
+    </div>
     <label style="display:flex;align-items:center;gap:8px;">
       <input type="checkbox" name="is_anonymous" value="1"> Send anonymously (a secret admirer)
     </label>
@@ -58,9 +61,11 @@
       #placePanel.hide { display:none; }
     </style>
     <fieldset style="border:0;padding:0;margin:0;">
-      <legend style="font-size:13px;font-weight:600;opacity:.7;">A spot to suggest?</legend>
-      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="place_mode" value="open" checked> I'm open — they pick the vibe</label>
-      <label style="display:flex;align-items:center;gap:6px;"><input type="radio" name="place_mode" value="focused"> Let's do a specific vibe</label>
+      <span class="label">A spot to suggest?</span>
+      <div class="seg" role="radiogroup" aria-label="A spot to suggest?">
+        <label><input type="radio" name="place_mode" value="open" checked><span>I'm open — they pick</span></label>
+        <label><input type="radio" name="place_mode" value="focused"><span>Let's do a vibe</span></label>
+      </div>
       <div id="placePanel" class="hide" style="margin-top:8px;">
         <select name="focus_vibe" style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
           <?php foreach (($meals ?? []) as $meal): ?>
