@@ -112,7 +112,7 @@ $adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo
 $adminAuthCtrl = new AdminAuthController($view, $csrf, $users, $session, new RateLimiter($pdo, $clock));
 $profileCtrl = new ProfileController($view, $csrf, $users);
 $landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $postman, (string) $config->get('app_url', 'http://localhost'));
-$revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock));
+$revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock), $invitePlaceRepo);
 
 $router = new Router();
 (require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl);
