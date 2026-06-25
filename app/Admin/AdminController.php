@@ -13,6 +13,7 @@ use App\Invite\InviteRepo;
 use App\Mail\Email;
 use App\Mail\EmailTemplateRepo;
 use App\Mail\MailerFactory;
+use App\Notify\TelegramNotifier;
 use App\Security\BlockRepo;
 use App\Settings\SettingsRepo;
 use App\Share\ShareTargetRepo;
@@ -160,7 +161,7 @@ final class AdminController
         return (new Response('', 302))->withHeader('Location', '/admin/moderation');
     }
 
-    public function sendTest(?int $userId, string $csrf): Response
+    public function testProvider(?int $userId, string $provider, string $csrf): Response
     {
         if (($admin = $this->requireAdmin($userId)) === null) {
             return $this->forbidden();
@@ -168,15 +169,39 @@ final class AdminController
         if (!$this->csrf->validate($csrf)) {
             return $this->settings($userId, 'Session expired, please retry.')->withStatus(400);
         }
+
+        $labels = [
+            'php'      => 'PHP mail',
+            'resend'   => 'Resend',
+            'mailjet'  => 'Mailjet',
+            'smtp'     => 'SMTP',
+            'telegram' => 'Telegram',
+        ];
+
+        if (!array_key_exists($provider, $labels)) {
+            return $this->settings($userId, 'Unknown provider: ' . $provider);
+        }
+
+        $label = $labels[$provider];
         try {
-            MailerFactory::make($this->settings)->send(new Email(
-                (string) $admin['email'],
-                'Crush test email',
-                '<p>This is a Crush test email. Your mail settings work.</p>'
-            ));
-            $flash = 'Test email sent to ' . $admin['email'] . '.';
+            if ($provider === 'telegram') {
+                $notifier = TelegramNotifier::fromSettings($this->settings);
+                $notifier->verify();
+                $notifier->notify('Crush test notification - your Telegram settings work.');
+            } else {
+                $fromEmail = (string) $this->settings->get('from_email', 'noreply@localhost');
+                $fromName  = (string) $this->settings->get('from_name', 'Crush');
+                $mailer = MailerFactory::build($provider, $this->settings, $fromEmail, $fromName);
+                $mailer->verify();
+                $mailer->send(new Email(
+                    (string) $admin['email'],
+                    'Crush test email',
+                    '<p>This is a Crush test email. Your ' . $label . ' settings work.</p>'
+                ));
+            }
+            $flash = $label . ' OK - test sent.';
         } catch (\Throwable $e) {
-            $flash = 'Test failed: ' . $e->getMessage();
+            $flash = $label . ' test failed: ' . $e->getMessage();
         }
         return $this->settings($userId, $flash);
     }
