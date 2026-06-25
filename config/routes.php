@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\About\AboutController;
 use App\Admin\AdminAuthController;
 use App\Admin\AdminController;
 use App\Admin\BlockController;
@@ -31,8 +32,10 @@ return static function (
     AdminAuthController $adminAuth,
     MapsController $maps,
     AvatarController $avatar,
+    AboutController $about,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
+    $router->add('GET', '/about', static fn(): Response => $about->show());
 
     $router->add('GET',  '/login',              static fn(): Response => $auth->showLogin(
         (static fn($v) => is_string($v) ? $v : null)($_GET['e'] ?? null)
@@ -122,6 +125,14 @@ return static function (
         $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
     ));
 
+    $router->add('GET',  '/admin/languages',      static fn(): Response => $admin->languages($currentUserId()));
+    $router->add('GET',  '/admin/languages/edit', static fn(): Response => $admin->editLanguage(
+        $currentUserId(), (static fn($v) => is_string($v) ? $v : '')($_GET['lang'] ?? '')
+    ));
+    $router->add('POST', '/admin/languages',      static fn(): Response => $admin->saveLanguage(
+        $currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')
+    ));
+
     $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 
@@ -133,4 +144,8 @@ return static function (
     ));
 
     $router->add('GET', '/avatar/{id}', static fn(string $id): Response => $avatar->show((int) $id));
+
+    $router->add('GET', '/lang/{code}', static fn(string $code): Response => (new \App\I18n\LangController())->set(
+        $code, is_string($_SERVER['HTTP_REFERER'] ?? null) ? parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) : null
+    ));
 };

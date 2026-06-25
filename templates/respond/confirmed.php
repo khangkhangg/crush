@@ -1,6 +1,6 @@
 <?php $reveal = $reveal ?? null; $wasAnonymous = $wasAnonymous ?? false; ?>
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="<?= $e($lang ?? 'en') ?>"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $e($title ?? 'Crush') ?></title>
 <link rel="stylesheet" href="/assets/css/base.css">
@@ -22,6 +22,7 @@
 </style>
 </head>
 <body class="theme-<?= $e($theme) ?>">
+<?php include __DIR__ . '/../partials/lang_switcher.php'; ?>
 <?php include __DIR__ . '/../partials/icons.php'; ?>
 <main class="card confirm-card">
   <div class="envelope" aria-hidden="true">

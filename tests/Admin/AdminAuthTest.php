@@ -8,6 +8,7 @@ use App\Auth\UserRepo;
 use App\Core\ArrayStore;
 use App\Core\Csrf;
 use App\Core\View;
+use App\I18n\Translator;
 use App\Invite\InviteRepo;
 use App\Mail\EmailTemplateRepo;
 use App\Security\BlockRepo;
@@ -36,7 +37,8 @@ final class AdminAuthTest extends DatabaseTestCase
             new BlockRepo($this->pdo(), $this->clock),
             'http://localhost',
             new EmailTemplateRepo($this->pdo()),
-            new ShareTargetRepo($this->pdo())
+            new ShareTargetRepo($this->pdo()),
+            new Translator($this->pdo(), 'en')
         );
     }
 

@@ -1,5 +1,5 @@
 <?php $message = $message ?? null; ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html><html lang="<?= $e($lang ?? 'en') ?>"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title><?= $e($title ?? 'Crush') ?></title>
 <style>
   *{box-sizing:border-box} body{margin:0;min-height:100svh;display:flex;align-items:flex-end;justify-content:center;
@@ -22,6 +22,7 @@
   .rf-cta{min-height:50px;border:0;border-radius:16px;background:linear-gradient(90deg,#ff5fa2,#9d7bff);color:#fff;font-weight:800;font-size:17px;font-family:inherit;cursor:pointer;box-shadow:0 0 24px rgba(157,123,255,.6);transition:scale .12s} .rf-cta:active{scale:.96}
 </style></head>
 <body class="theme-midnight">
+<?php include __DIR__ . '/../../partials/lang_switcher.php'; ?>
 <?php include __DIR__ . '/../../partials/icons.php'; ?>
 <span class="mn-star" style="top:8%;left:18%"></span><span class="mn-star" style="top:14%;left:72%"></span>
 <span class="mn-star" style="top:22%;left:44%"></span><span class="mn-star" style="top:6%;left:60%"></span>

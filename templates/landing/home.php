@@ -1,6 +1,6 @@
 <?php $error = $error ?? null; $sent = $sent ?? null; $name = $name ?? ''; $email = $email ?? ''; ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?= $e($lang ?? 'en') ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,6 +40,7 @@
   </style>
 </head>
 <body>
+<?php include __DIR__ . '/../partials/lang_switcher.php'; ?>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="l-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor"/></symbol>
     <symbol id="l-spark" viewBox="0 0 24 24"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z" fill="currentColor"/></symbol>
@@ -54,7 +55,7 @@
   <main class="stage">
     <div class="mascot"><svg width="84" height="84"><use href="#l-mail"/></svg></div>
     <div class="word">Crush <span class="hb"><svg width="38" height="38"><use href="#l-heart"/></svg></span></div>
-    <p class="tag">Send your crush a date — anonymously, adorably.</p>
+    <p class="tag"><?= $e($t('Send your crush a date — anonymously, adorably.')) ?></p>
 
     <div class="card">
       <?php if ($sent): ?>
@@ -63,13 +64,13 @@
         <?php if ($error): ?><p class="err" role="alert"><?= $e($error) ?></p><?php endif; ?>
         <form method="post" action="/" class="row">
           <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
-          <input name="name" value="<?= $e($name) ?>" placeholder="your name" required autocomplete="name">
-          <input type="email" name="email" value="<?= $e($email) ?>" placeholder="you@email.com" required autocomplete="email">
+          <input name="name" value="<?= $e($name) ?>" placeholder="<?= $e($t('your name')) ?>" required autocomplete="name">
+          <input type="email" name="email" value="<?= $e($email) ?>" placeholder="<?= $e($t('you@email.com')) ?>" required autocomplete="email">
           <input type="password" name="password" placeholder="pick a password" required minlength="6" autocomplete="new-password"
                  style="padding:13px;border-radius:14px;border:1px solid #f0d9ea;font-size:16px;font-family:inherit;">
-          <button type="submit" class="go">Start <svg><use href="#l-mail"/></svg></button>
+          <button type="submit" class="go"><?= $e($t('Start')) ?> <svg><use href="#l-mail"/></svg></button>
         </form>
-        <p class="fine">Pick a password — you'll use it to sign back in.</p>
+        <p class="fine"><?= $e($t('Pick a password — you\'ll use it to sign back in.')) ?> <a href="/about"><?= $e($t('What is Crush?')) ?></a></p>
       <?php endif; ?>
     </div>
   </main>

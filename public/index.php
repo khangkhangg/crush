@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use App\About\AboutController;
 use App\Admin\AdminAuthController;
 use App\Admin\AdminController;
 use App\Admin\BlockController;
@@ -54,9 +55,13 @@ $secure  = str_starts_with((string) $config->get('app_url', ''), 'https');
 $store   = new PhpSessionStore($secure);
 $session = new Session($store);
 $csrf    = new Csrf($store);
-$view    = new View(dirname(__DIR__) . '/templates');
 $clock   = new SystemClock();
 $pdo     = DB::connect($config);
+$reqLang = is_string($_COOKIE['lang'] ?? null) && \App\Core\Locale::isSupported($_COOKIE['lang'])
+    ? $_COOKIE['lang']
+    : \App\Core\Locale::detect((string) ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''));
+$translator = new \App\I18n\Translator($pdo, $reqLang);
+$view    = new View(dirname(__DIR__) . '/templates', $translator);
 $users   = new UserRepo($pdo, $clock);
 $magic   = new MagicLink($pdo, $users, $clock);
 
@@ -110,16 +115,17 @@ $respondCtrl  = new RespondController(
     $view, $csrf, $inviteRepo, $responseRepo, $users, $assigner, $abEvents, $clock, $linkResolver, $postman, $crushOnboarder, $invitePlaceRepo
 );
 
-$adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'), $emailTemplates, $shareTargets);
+$adminCtrl     = new AdminController($view, $csrf, $users, $settings, $themeRepo, $abEvents, $inviteRepo, $blockRepo, (string) $config->get('app_url', 'http://localhost'), $emailTemplates, $shareTargets, $translator);
 $adminAuthCtrl = new AdminAuthController($view, $csrf, $users, $session, new RateLimiter($pdo, $clock));
 $avatarStore = new AvatarStore(dirname(__DIR__) . '/storage/avatars');
 $avatarCtrl  = new AvatarController($avatarStore);
 $profileCtrl = new ProfileController($view, $csrf, $users, $avatarStore);
 $landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $postman, (string) $config->get('app_url', 'http://localhost'));
 $revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock), $invitePlaceRepo, $csrf);
+$aboutCtrl   = new AboutController($view);
 
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl, $avatarCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl, $avatarCtrl, $aboutCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');

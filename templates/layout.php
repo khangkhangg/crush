@@ -1,6 +1,6 @@
 <?php $cardClass = $cardClass ?? ''; ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?= $e($lang ?? 'en') ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,6 +32,7 @@
   </style>
 </head>
 <body>
+<?php include __DIR__ . '/partials/lang_switcher.php'; ?>
   <main class="card <?= $e($cardClass) ?>"><?= $body ?></main>
 <?php include __DIR__ . '/partials/analytics.php'; ?>
 </body>

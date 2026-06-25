@@ -5,7 +5,7 @@ namespace App\Core;
 
 final class Locale
 {
-    public const SUPPORTED = ['en', 'vi', 'ko'];
+    public const SUPPORTED = ['en', 'vi', 'es', 'zh', 'hi', 'pt', 'fr', 'ko', 'ja', 'th'];
 
     public static function detect(?string $acceptLanguage): string
     {
