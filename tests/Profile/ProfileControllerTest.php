@@ -59,13 +59,12 @@ final class ProfileControllerTest extends DatabaseTestCase
         $id = $this->user();
         $res = $ctrl->save($id, [
             'avatar_key' => Avatars::keys()[1] ?? Avatars::default(),
-            'pronouns' => 'they/them', 'bio' => 'hi', 'contact' => '@me',
+            'bio' => 'hi', 'contact' => '@me',
         ], $csrf->token());
 
         $this->assertSame(302, $res->status());
         $reloaded = (new UserRepo($this->pdo(), $this->clock))->findById($id);
         $this->assertTrue(UserRepo::isProfileComplete($reloaded));
-        $this->assertSame('they/them', $reloaded['pronouns']);
     }
 
     public function test_save_coerces_invalid_avatar_to_default(): void
