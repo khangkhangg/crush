@@ -62,6 +62,13 @@
       .iv-prev { font-size:12px; color:#7a5; margin:6px 0 0 2px; min-height:14px; }
       @media (max-width:560px){ .iv-opt-top { grid-template-columns:1fr auto; } .iv-opt-top .iv-u { grid-column:1 / -1; } }
       #placePanel.hide { display:none; }
+      .map-modal { position:fixed; inset:0; background:rgba(60,30,70,.45); display:none; align-items:center; justify-content:center; z-index:50; padding:16px; }
+      .map-modal.show { display:flex; }
+      .map-modal .card2 { background:#fff; border-radius:18px; padding:10px; width:min(92vw,560px); box-shadow:0 20px 50px rgba(90,42,82,.35); }
+      .map-modal .bar { display:flex; align-items:center; justify-content:space-between; padding:4px 6px 8px; }
+      .map-modal .bar strong { font-size:14px; }
+      .map-modal .x { border:0; background:none; font-size:22px; line-height:1; cursor:pointer; color:#7a5e86; }
+      .map-modal iframe { width:100%; height:300px; border:0; border-radius:12px; display:block; }
     </style>
     <fieldset style="border:0;padding:0;margin:0;">
       <span class="label">A spot to suggest?</span>
@@ -99,6 +106,12 @@
       Create my invite
     </button>
   </form>
+  <div id="mapModal" class="map-modal" aria-hidden="true">
+    <div class="card2" role="dialog" aria-label="Map preview">
+      <div class="bar"><strong id="mapTitle">Map preview</strong><button type="button" class="x" id="mapClose" aria-label="Close">&times;</button></div>
+      <div id="mapFrame"></div>
+    </div>
+  </div>
     <script>
     (function(){
       var email = document.getElementById('crush_email');
@@ -148,6 +161,24 @@
         if (e.target.classList.contains('rm') && list.children.length > 1) e.target.closest('.iv-opt').remove();
       });
 
+      var modal = document.getElementById('mapModal');
+      var frame = document.getElementById('mapFrame');
+      var mapTitle = document.getElementById('mapTitle');
+      function openMap(place){
+        if (!modal || !frame) return;
+        frame.innerHTML = '<iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=' + encodeURIComponent(place) + '&output=embed"></iframe>';
+        if (mapTitle) mapTitle.textContent = place;
+        modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false');
+      }
+      function closeMap(){
+        if (!modal || !frame) return;
+        modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); frame.innerHTML = '';
+      }
+      var mapClose = document.getElementById('mapClose');
+      if (mapClose) mapClose.addEventListener('click', closeMap);
+      if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closeMap(); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMap(); });
+
       function showPrev(input){
         var url = (input.value || '').trim();
         var row = input.closest('.iv-opt');
@@ -157,7 +188,19 @@
         prev.textContent = 'Looking up…';
         fetch('/maps/preview?url=' + encodeURIComponent(url), { headers: { 'Accept': 'application/json' } })
           .then(function(r){ return r.json(); })
-          .then(function(d){ prev.textContent = d && (d.name || d.address) ? ('Found: ' + (d.name || d.address)) : ''; })
+          .then(function(d){
+            var place = d && (d.address || d.name);
+            if (!place) { prev.textContent = ''; return; }
+            prev.textContent = 'Found: ' + place + '  ';
+            if (window.innerWidth >= 700) {
+              var btn = document.createElement('button');
+              btn.type = 'button'; btn.textContent = 'View map';
+              btn.style.cssText = 'border:0;background:none;color:#ff3d8b;font-weight:700;cursor:pointer;padding:0;';
+              btn.addEventListener('click', function(){ openMap(place); });
+              prev.appendChild(btn);
+              openMap(place);   // auto-open once on resolve (desktop)
+            }
+          })
           .catch(function(){ prev.textContent = ''; });
       }
       document.addEventListener('change', function(e){
