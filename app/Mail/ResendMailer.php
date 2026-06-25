@@ -11,6 +11,25 @@ final class ResendMailer implements Mailer
         private string $fromName,
     ) {}
 
+    public function verify(): void
+    {
+        $ch = curl_init('https://api.resend.com/domains');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . $this->apiKey,
+            ],
+        ]);
+        $res    = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $err    = curl_error($ch);
+        curl_close($ch);
+        if ($res === false || $status < 200 || $status >= 300) {
+            throw new \RuntimeException('Resend verify failed (' . $status . '): ' . $err . ' ' . (string) $res);
+        }
+    }
+
     public function send(Email $email): void
     {
         $payload = [

@@ -18,6 +18,20 @@ final class SmtpMailer implements Mailer
         private string $encryption = 'tls',
     ) {}
 
+    public function verify(): void
+    {
+        if ($this->host === '') {
+            throw new \RuntimeException('SMTP host is not configured.');
+        }
+        $fp = @fsockopen($this->host, $this->port, $errno, $errstr, 10);
+        if ($fp === false) {
+            throw new \RuntimeException('SMTP connect failed (' . $this->host . ':' . $this->port . '): ' . $errstr . ' (' . $errno . ')');
+        }
+        fgets($fp, 1024);
+        fwrite($fp, "QUIT\r\n");
+        fclose($fp);
+    }
+
     public function send(Email $email): void
     {
         $mail = new PHPMailer(true);
