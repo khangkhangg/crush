@@ -73,6 +73,15 @@ $content = function () use ($e, $invites, $appUrl, $badge) { ob_start(); ?>
           .then(function(html){
             var card2 = new DOMParser().parseFromString(html, 'text/html').querySelector('main.card');
             det.innerHTML = '<div class="inner">' + (card2 ? card2.innerHTML : 'Could not load the details.') + '</div>';
+            // The injected detail's own <script> won't run; re-bind its copy-link button.
+            det.querySelectorAll('.iv-reshare').forEach(function(b){
+              b.addEventListener('click', function(){
+                var tk = b.getAttribute('data-token');
+                if (tk && navigator.clipboard) navigator.clipboard.writeText(location.origin + '/i/' + tk).then(function(){
+                  var o = b.textContent; b.textContent = 'Copied!'; setTimeout(function(){ b.textContent = o; }, 1500);
+                });
+              });
+            });
             det.setAttribute('data-loaded', '1');
             card.classList.add('open'); a.textContent = 'Hide';
           })
