@@ -21,7 +21,7 @@ final class TranslatorTest extends DatabaseTestCase
 
     public function test_translate_falls_back_to_english(): void
     {
-        $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?)')
+        $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)')
             ->execute(['vi', 'Send a crush invite', 'Gửi lời mời hẹn hò']);
         $vi = new Translator($this->pdo(), 'vi');
         $this->assertSame('Gửi lời mời hẹn hò', $vi->t('Send a crush invite'));
@@ -32,7 +32,7 @@ final class TranslatorTest extends DatabaseTestCase
 
     public function test_view_injects_t_and_lang(): void
     {
-        $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?)')
+        $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)')
             ->execute(['vi', 'Your invites', 'Lời mời của bạn']);
         $translator = new Translator($this->pdo(), 'vi');
         $this->assertSame('Lời mời của bạn', $translator->t('Your invites'));

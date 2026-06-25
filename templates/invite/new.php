@@ -1,5 +1,5 @@
 <?php $error = $error ?? null; $old = $old ?? []; $csrf = $csrf ?? ''; $meals = $meals ?? []; $me = $me ?? null; $cardClass = 'card--wide'; ?>
-<?php $content = function () use ($e, $csrf, $error, $old, $meals, $me) {
+<?php $content = function () use ($e, $t, $csrf, $error, $old, $meals, $me) {
   $val = fn(string $k) => $e($old[$k] ?? '');
   ob_start(); ?>
   <?php if ($me && !empty($me['name'])): ?>
@@ -8,47 +8,47 @@
         <?php include __DIR__ . '/../partials/avatars.php'; ?>
         <svg width="22" height="22"><use href="#av-<?= $e($me['avatar_key']) ?>"/></svg>
       <?php endif; ?>
-      <span>Creating as <strong><?= $e($me['name']) ?></strong></span>
-      <span style="margin-left:auto;opacity:.8;">not you? <a href="/switch" style="color:#ff3d8b;">use another email</a> · <a href="/login" style="color:#ff3d8b;">log in</a></span>
+      <span><?= $e($t('Creating as')) ?> <strong><?= $e($me['name']) ?></strong></span>
+      <span style="margin-left:auto;opacity:.8;"><?= $e($t('not you?')) ?> <a href="/switch" style="color:#ff3d8b;"><?= $e($t('use another email')) ?></a> · <a href="/login" style="color:#ff3d8b;"><?= $e($t('log in')) ?></a></span>
     </div>
   <?php endif; ?>
-  <h1 style="text-wrap:balance;">Send a crush invite</h1>
+  <h1 style="text-wrap:balance;"><?= $e($t('Send a crush invite')) ?></h1>
   <?php if ($error): ?><p role="alert" style="color:#b3243b;"><?= $e($error) ?></p><?php endif; ?>
   <form method="post" action="/invites" style="display:flex;flex-direction:column;gap:12px;">
     <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
     <div>
-      <span class="label">How will you send it?</span>
-      <div class="seg" role="radiogroup" aria-label="How will you send it?">
-        <label><input type="radio" name="delivery" value="email" checked><span>Email it to them</span></label>
-        <label><input type="radio" name="delivery" value="link"><span>I'll share the link</span></label>
+      <span class="label"><?= $e($t('How will you send it?')) ?></span>
+      <div class="seg" role="radiogroup" aria-label="<?= $e($t('How will you send it?')) ?>">
+        <label><input type="radio" name="delivery" value="email" checked><span><?= $e($t('Email it to them')) ?></span></label>
+        <label><input type="radio" name="delivery" value="link"><span><?= $e($t('I\'ll share the link')) ?></span></label>
       </div>
     </div>
     <div id="emailWrap" class="iv-collapse">
-    <label>Their email
+    <label><?= $e($t('Their email')) ?>
       <input type="email" id="crush_email" name="crush_email" value="<?= $val('crush_email') ?>"
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
     </label>
     </div>
-    <label>Their name
+    <label><?= $e($t('Their name')) ?>
       <input type="text" name="crush_name" required value="<?= $val('crush_name') ?>"
              style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
     </label>
-    <label>A little message (optional)
+    <label><?= $e($t('A little message (optional)')) ?>
       <textarea name="message" rows="3"
                 style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;"><?= $val('message') ?></textarea>
     </label>
     <div>
-      <span class="label">When should they pick?</span>
-      <div class="seg" role="radiogroup" aria-label="When should they pick?">
-        <label><input type="radio" name="date_mode" value="instant" checked><span>Any time (final)</span></label>
-        <label><input type="radio" name="date_mode" value="confirm"><span>They propose, I confirm</span></label>
+      <span class="label"><?= $e($t('When should they pick?')) ?></span>
+      <div class="seg" role="radiogroup" aria-label="<?= $e($t('When should they pick?')) ?>">
+        <label><input type="radio" name="date_mode" value="instant" checked><span><?= $e($t('Any time (final)')) ?></span></label>
+        <label><input type="radio" name="date_mode" value="confirm"><span><?= $e($t('They propose, I confirm')) ?></span></label>
       </div>
     </div>
     <label style="display:flex;align-items:center;gap:8px;">
-      <input type="checkbox" name="is_anonymous" value="1"> Send anonymously (a secret admirer)
+      <input type="checkbox" name="is_anonymous" value="1"> <?= $e($t('Send anonymously (a secret admirer)')) ?>
     </label>
     <label style="display:flex;align-items:center;gap:8px;">
-      <input type="checkbox" name="reveal_on_response" value="1"> Reveal me after they respond
+      <input type="checkbox" name="reveal_on_response" value="1"> <?= $e($t('Reveal me after they respond')) ?>
     </label>
     <style>
       .iv-collapse { overflow:hidden; transition:max-height .3s ease, opacity .3s ease; max-height:120px; opacity:1; }
@@ -73,44 +73,44 @@
       .map-modal iframe { width:100%; height:300px; border:0; border-radius:12px; display:block; }
     </style>
     <fieldset style="border:0;padding:0;margin:0;">
-      <span class="label">A spot to suggest?</span>
-      <div class="seg" role="radiogroup" aria-label="A spot to suggest?">
-        <label><input type="radio" name="place_mode" value="open" checked><span>I'm open — they pick</span></label>
-        <label><input type="radio" name="place_mode" value="focused"><span>Let's do a vibe</span></label>
+      <span class="label"><?= $e($t('A spot to suggest?')) ?></span>
+      <div class="seg" role="radiogroup" aria-label="<?= $e($t('A spot to suggest?')) ?>">
+        <label><input type="radio" name="place_mode" value="open" checked><span><?= $e($t('I\'m open — they pick')) ?></span></label>
+        <label><input type="radio" name="place_mode" value="focused"><span><?= $e($t('Let\'s do a vibe')) ?></span></label>
       </div>
       <div id="placePanel" style="margin-top:8px;">
         <select name="focus_vibe" style="width:100%;padding:11px;border-radius:12px;border:1px solid #e7d4ff;">
           <?php foreach (($meals ?? []) as $meal): ?>
-            <option value="<?= $e($meal['key']) ?>"><?= $e($meal['label']) ?></option>
+            <option value="<?= $e($meal['key']) ?>"><?= $e($t($meal['label'])) ?></option>
           <?php endforeach; ?>
         </select>
         <div id="optList">
           <div class="iv-opt">
             <div class="iv-opt-top">
-              <input class="field" type="text" name="opts[0][name]" placeholder="restaurant name">
-              <input class="field iv-u" type="text" name="opts[0][url]" placeholder="maps link (optional)" data-maps>
+              <input class="field" type="text" name="opts[0][name]" placeholder="<?= $e($t('restaurant name')) ?>">
+              <input class="field iv-u" type="text" name="opts[0][url]" placeholder="<?= $e($t('maps link (optional)')) ?>" data-maps>
               <button type="button" class="rm" aria-label="Remove">&times;</button>
             </div>
             <div class="chips">
               <?php foreach (['Italian','Japanese','Korean','Vietnamese','Thai','Chinese','Mexican','Indian','American','French','Dessert'] as $c): ?>
                 <label class="chip"><input type="radio" name="opts[0][cuisine]" value="<?= $e($c) ?>"><span><?= $e($c) ?></span></label>
               <?php endforeach; ?>
-              <label class="chip"><input type="radio" name="opts[0][cuisine]" value="__other__" data-other><span>Other</span></label>
+              <label class="chip"><input type="radio" name="opts[0][cuisine]" value="__other__" data-other><span><?= $e($t('Other')) ?></span></label>
             </div>
-            <input class="field iv-other" type="text" name="opts[0][cuisine_custom]" placeholder="cuisine" hidden>
+            <input class="field iv-other" type="text" name="opts[0][cuisine_custom]" placeholder="<?= $e($t('cuisine')) ?>" hidden>
           </div>
         </div>
-        <button type="button" id="addPlace" style="margin-top:6px;padding:8px 12px;border:1px dashed #e7d4ff;border-radius:10px;background:#fff;color:#ff3d8b;font-weight:600;cursor:pointer;">+ Add another place</button>
+        <button type="button" id="addPlace" style="margin-top:6px;padding:8px 12px;border:1px dashed #e7d4ff;border-radius:10px;background:#fff;color:#ff3d8b;font-weight:600;cursor:pointer;">+ <?= $e($t('Add another place')) ?></button>
       </div>
     </fieldset>
     <button type="submit"
             style="padding:12px;border:0;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;cursor:pointer;">
-      Create my invite
+      <?= $e($t('Create my invite')) ?>
     </button>
   </form>
   <div id="mapModal" class="map-modal" aria-hidden="true">
     <div class="card2" role="dialog" aria-label="Map preview">
-      <div class="bar"><strong id="mapTitle">Map preview</strong><button type="button" class="x" id="mapClose" aria-label="Close">&times;</button></div>
+      <div class="bar"><strong id="mapTitle"><?= $e($t('Map preview')) ?></strong><button type="button" class="x" id="mapClose" aria-label="Close">&times;</button></div>
       <div id="mapFrame"></div>
     </div>
   </div>

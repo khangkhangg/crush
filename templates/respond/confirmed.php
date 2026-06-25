@@ -31,14 +31,14 @@
     <div class="flap"></div>
     <svg class="heart"><use href="#ic-heart"/></svg>
   </div>
-  <h1>Your answer is on its way</h1>
-  <p class="when">You picked <strong><?= $e($when) ?></strong>.</p>
+  <h1><?= $e($t('Your answer is on its way')) ?></h1>
+  <p class="when"><?= $e($t('You picked')) ?> <strong><?= $e($when) ?></strong>.</p>
   <?php if ($reveal && $wasAnonymous): ?>
-    <p class="reveal">Your secret admirer is <strong><?= $e($reveal) ?></strong>.</p>
+    <p class="reveal"><?= $e($t('Your secret admirer is')) ?> <strong><?= $e($reveal) ?></strong>.</p>
   <?php elseif ($reveal && !$wasAnonymous): ?>
-    <p class="reveal">It's a date with <strong><?= $e($reveal) ?></strong>.</p>
+    <p class="reveal"><?= $e($t('It\'s a date with')) ?> <strong><?= $e($reveal) ?></strong>.</p>
   <?php else: ?>
-    <p class="reveal">They'll be in touch soon.</p>
+    <p class="reveal"><?= $e($t('They\'ll be in touch soon.')) ?></p>
   <?php endif; ?>
 </main>
 <?php include __DIR__ . '/../partials/analytics.php'; ?>
