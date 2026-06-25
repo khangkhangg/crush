@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
+use App\About\AboutController;
 use App\Admin\AdminAuthController;
 use App\Admin\AdminController;
 use App\Admin\BlockController;
@@ -121,9 +122,10 @@ $avatarCtrl  = new AvatarController($avatarStore);
 $profileCtrl = new ProfileController($view, $csrf, $users, $avatarStore);
 $landingCtrl = new LandingController($view, $csrf, $users, $magic, $session, $postman, (string) $config->get('app_url', 'http://localhost'));
 $revealCtrl  = new RevealController($view, $users, $inviteRepo, $responseRepo, new IcsBuilder($clock), $invitePlaceRepo, $csrf);
+$aboutCtrl   = new AboutController($view);
 
 $router = new Router();
-(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl, $avatarCtrl);
+(require dirname(__DIR__) . '/config/routes.php')($router, $auth, $googleCtrl, $inviteCtrl, $currentUserId, $respondCtrl, $blockCtrl, $adminCtrl, $profileCtrl, $landingCtrl, $revealCtrl, $adminAuthCtrl, $mapsCtrl, $avatarCtrl, $aboutCtrl);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');

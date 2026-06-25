@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\About\AboutController;
 use App\Admin\AdminAuthController;
 use App\Admin\AdminController;
 use App\Admin\BlockController;
@@ -31,8 +32,10 @@ return static function (
     AdminAuthController $adminAuth,
     MapsController $maps,
     AvatarController $avatar,
+    AboutController $about,
 ): void {
     $router->add('GET', '/health', static fn(): Response => Response::html('ok'));
+    $router->add('GET', '/about', static fn(): Response => $about->show());
 
     $router->add('GET',  '/login',              static fn(): Response => $auth->showLogin(
         (static fn($v) => is_string($v) ? $v : null)($_GET['e'] ?? null)
