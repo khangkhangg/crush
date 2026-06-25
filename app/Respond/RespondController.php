@@ -181,10 +181,15 @@ final class RespondController
         $this->events->log((int) $invite['id'], $theme, 'completed');
 
         $sender = $this->users->findById((int) $invite['sender_id']);
-        if ($sender !== null) {
-            $stored = $this->responses->findByInvite((int) $invite['id']);
-            if ($stored !== null) {
+        $stored = $this->responses->findByInvite((int) $invite['id']);
+        if ($stored !== null) {
+            if ($sender !== null) {
                 $this->postman->sendResult($invite, $stored, $sender);
+            }
+            try {
+                $this->postman->sendConfirm($invite, $stored);
+            } catch (\Throwable $e) {
+                error_log('Crush confirm email failed: ' . $e->getMessage());
             }
         }
 

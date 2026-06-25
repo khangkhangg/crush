@@ -29,6 +29,7 @@ final class AdminController
         'invite'  => '{{senderLabel}} {{message}} {{link}} {{unsubscribe}}',
         'result'  => '{{crushName}} {{when}} {{meal}} {{place}} {{mapHref}}',
         'magic'   => '{{link}}',
+        'confirm' => '{{when}} {{meal}} {{place}}',
     ];
 
     private const SETTING_KEYS = [

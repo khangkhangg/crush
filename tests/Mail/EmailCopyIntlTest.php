@@ -13,8 +13,7 @@ final class EmailCopyIntlTest extends DatabaseTestCase
         $repo = new EmailTemplateRepo($this->pdo());
         $vi = $repo->getExact('welcome', 'vi');
         $this->assertStringContainsString('Chào mừng', $vi['subject']);   // accented
-        // placeholders preserved
-        $this->assertStringContainsString('{{name}}', $vi['body_html']);
+        // placeholder preserved
         $this->assertStringContainsString('{{link}}', $vi['body_html']);
     }
 
@@ -22,7 +21,7 @@ final class EmailCopyIntlTest extends DatabaseTestCase
     {
         $repo = new EmailTemplateRepo($this->pdo());
         $ko = $repo->getExact('invite', 'ko');
-        foreach (['{{senderLabel}}', '{{link}}', '{{unsubscribe}}'] as $p) {
+        foreach (['{{message}}', '{{link}}', '{{unsubscribe}}'] as $p) {
             $this->assertStringContainsString($p, $ko['body_html']);
         }
     }

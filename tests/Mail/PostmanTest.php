@@ -35,7 +35,8 @@ final class PostmanTest extends DatabaseTestCase
         $this->postman($spy)->sendInvite($invite);
         $email = $spy->sent[0];
         $this->assertSame('c@x.test', $email->to);
-        $this->assertStringContainsString('secret admirer', $email->html);
+        // generic headline never reveals the sender (anonymity preserved)
+        $this->assertStringContainsString('has a crush on you', $email->html);
         $this->assertStringContainsString('https://crush.app/i/tok', $email->html);
         $this->assertStringContainsString('https://crush.app/unsubscribe/tok', $email->html);
     }

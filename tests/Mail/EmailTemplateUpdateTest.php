@@ -12,7 +12,7 @@ final class EmailTemplateUpdateTest extends DatabaseTestCase
     {
         $repo = new EmailTemplateRepo($this->pdo());
         $this->assertNotNull($repo->getExact('welcome', 'vi'));
-        $this->assertNull($repo->getExact('welcome', 'fr')); // no fallback, unlike get()
+        $this->assertNull($repo->getExact('welcome', 'de')); // German not seeded; no fallback, unlike get()
     }
 
     public function test_update_changes_subject_and_body(): void

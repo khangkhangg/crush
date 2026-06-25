@@ -73,6 +73,21 @@ final class Postman
         ));
     }
 
+    /** Confirmation email to the crush after they answer (only if we have their email). */
+    public function sendConfirm(array $invite, array $response): bool
+    {
+        $crushEmail = trim((string) ($invite['crush_email'] ?? ''));
+        if ($crushEmail === '') {
+            return false;
+        }
+        $place = trim((string) (($response['pickup_name'] ?? '') . ' ' . ($response['pickup_address'] ?? '')));
+        return $this->dispatchTemplate($crushEmail, 'confirm', (string) ($invite['lang'] ?? 'en'), [
+            'when'  => (string) ($response['chosen_start'] ?? ''),
+            'meal'  => (string) ($response['meal_choice'] ?? ''),
+            'place' => $place,
+        ]);
+    }
+
     public static function safeHref(?string $url): ?string
     {
         if ($url === null) {

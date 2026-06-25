@@ -57,10 +57,11 @@ final class MailWiringTest extends DatabaseTestCase
             'chosen_start' => '2026-02-10T19:00', 'meal_choice' => 'dinner',
         ], $csrf->token());
 
-        // result email to sender + welcome email to crush
-        $this->assertCount(2, $spy->sent);
+        // result email to sender + confirmation email to crush + welcome email to crush
+        $this->assertCount(3, $spy->sent);
         $recipients = array_map(fn($e) => $e->to, $spy->sent);
-        $this->assertContains('sue@x.test', $recipients);
+        $this->assertContains('sue@x.test', $recipients); // sender gets the result
+        $this->assertContains('c@x.test', $recipients);   // crush gets the confirmation
         $resultEmail = $spy->sent[array_search('sue@x.test', $recipients)];
         $this->assertNotEmpty($resultEmail->attachments);
     }

@@ -13,11 +13,11 @@ final class EmailTemplateSchemaTest extends DatabaseTestCase
         foreach (['id', 'key', 'lang', 'subject', 'body_html'] as $c) {
             $this->assertContains($c, $cols, "email_templates.$c");
         }
-        // 4 keys x 3 langs = 12 seeded rows
+        // 5 keys x 10 langs = 50 seeded rows
         $count = (int) $this->pdo()->query('SELECT COUNT(*) AS c FROM email_templates')->fetch()['c'];
-        $this->assertSame(12, $count);
-        foreach (['welcome', 'invite', 'result', 'magic'] as $key) {
-            foreach (['en', 'vi', 'ko'] as $lang) {
+        $this->assertSame(50, $count);
+        foreach (['welcome', 'invite', 'result', 'magic', 'confirm'] as $key) {
+            foreach (['en', 'vi', 'es', 'zh', 'hi', 'pt', 'fr', 'ko', 'ja', 'th'] as $lang) {
                 $stmt = $this->pdo()->prepare('SELECT subject, body_html FROM email_templates WHERE `key` = ? AND lang = ?');
                 $stmt->execute([$key, $lang]);
                 $row = $stmt->fetch();
