@@ -7,6 +7,7 @@ use App\Auth\UserRepo;
 use App\Core\Response;
 use App\Core\View;
 use App\Ics\IcsBuilder;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
 
@@ -18,6 +19,7 @@ final class RevealController
         private InviteRepo $invites,
         private ResponseRepo $responses,
         private IcsBuilder $ics,
+        private InvitePlaceRepo $places,
     ) {}
 
     public function show(?int $userId, string $token): Response
@@ -89,11 +91,16 @@ final class RevealController
 
     private function render(string $state, array $invite, ?array $response): Response
     {
+        $chosenPlace = null;
+        if ($response !== null && !empty($response['chosen_place_id'])) {
+            $chosenPlace = $this->places->findById((int) $response['chosen_place_id']);
+        }
         return Response::html($this->view->render('reveal/response', [
-            'title'    => 'Your crush',
-            'state'    => $state,
-            'invite'   => $invite,
-            'response' => $response,
+            'title'       => 'Your crush',
+            'state'       => $state,
+            'invite'      => $invite,
+            'response'    => $response,
+            'chosenPlace' => $chosenPlace,
         ]));
     }
 }

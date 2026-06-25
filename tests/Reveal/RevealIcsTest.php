@@ -6,6 +6,7 @@ namespace Tests\Reveal;
 use App\Auth\UserRepo;
 use App\Core\View;
 use App\Ics\IcsBuilder;
+use App\Invite\InvitePlaceRepo;
 use App\Invite\InviteRepo;
 use App\Invite\ResponseRepo;
 use App\Reveal\RevealController;
@@ -29,7 +30,8 @@ final class RevealIcsTest extends DatabaseTestCase
             $view, new UserRepo($this->pdo(), $this->clock),
             new InviteRepo($this->pdo(), $this->clock),
             new ResponseRepo($this->pdo(), $this->clock),
-            new IcsBuilder($this->clock)
+            new IcsBuilder($this->clock),
+            new InvitePlaceRepo($this->pdo())
         );
     }
 

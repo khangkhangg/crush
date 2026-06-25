@@ -63,4 +63,12 @@ final class InvitePlaceRepo
         $row = $stmt->fetch();
         return $row === false ? null : $row;
     }
+
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM invite_places WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
 }

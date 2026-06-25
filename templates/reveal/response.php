@@ -1,5 +1,5 @@
-<?php $state = $state ?? 'waiting'; $invite = $invite ?? null; $response = $response ?? null; ?>
-<?php $content = function () use ($e, $state, $invite, $response) {
+<?php $state = $state ?? 'waiting'; $invite = $invite ?? null; $response = $response ?? null; $chosenPlace = $chosenPlace ?? null; ?>
+<?php $content = function () use ($e, $state, $invite, $response, $chosenPlace) {
   $crush = $invite['crush_name'] ?? ($invite['crush_email'] ?? 'your crush');
   ob_start();
   if ($state === 'missing'): ?>
@@ -31,6 +31,17 @@
         </li>
       <?php endforeach; ?>
     </ol>
+    <?php if ($chosenPlace !== null):
+      $cpName = $chosenPlace['place_resolved_name'] ?: $chosenPlace['place_name'];
+      $cpCuisine = $chosenPlace['cuisine'] ?? '';
+      $cpMap = $chosenPlace['place_clean_url'] ?? ''; ?>
+      <p style="font-size:15px;margin:6px 0;">They picked
+        <strong><?= $e($cpName) ?></strong><?php if ($cpCuisine !== ''): ?> · <?= $e($cpCuisine) ?><?php endif; ?>
+        <?php if (is_string($cpMap) && str_starts_with((string) $cpMap, 'http')): ?>
+          — <a href="<?= $e($cpMap) ?>" target="_blank" rel="noopener" style="color:#ff3d8b;">map</a>
+        <?php endif; ?>
+      </p>
+    <?php endif; ?>
     <ul style="list-style:none;padding:0;line-height:1.8;">
       <li><strong>When:</strong> <?= $e($response['chosen_start'] ?? '') ?></li>
       <?php if (!empty($response['meal_choice'])): ?><li><strong>Craving:</strong> <?= $e($response['meal_choice']) ?></li><?php endif; ?>
