@@ -32,20 +32,13 @@ final class TranslatorTest extends DatabaseTestCase
 
     public function test_view_injects_t_and_lang(): void
     {
-        // NOTE: The brief's original 3rd assertion checks for lang="vi" in the HTML output.
-        // That requires Task 2 to wire the html lang attribute in layout.php.
-        // We verify instead that $t and $lang are exposed by Translator directly.
         $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?)')
             ->execute(['vi', 'Your invites', 'Lời mời của bạn']);
         $translator = new Translator($this->pdo(), 'vi');
-        // Verify translator works directly — $t injection is covered by View internals
         $this->assertSame('Lời mời của bạn', $translator->t('Your invites'));
         $this->assertSame('vi', $translator->lang());
-        // Verify View accepts a Translator without error
         $view = new View(\dirname(__DIR__, 2) . '/templates', $translator);
-        // Render a template that exists and confirm no exception (lang="vi" in <html>
-        // requires Task 2's layout.php change; that assertion is deferred to Task 2)
         $html = $view->render('invite/dashboard', ['title' => 'x', 'invites' => [], 'appUrl' => '']);
-        $this->assertIsString($html);
+        $this->assertStringContainsString('lang="vi"', $html);
     }
 }

@@ -54,9 +54,13 @@ $secure  = str_starts_with((string) $config->get('app_url', ''), 'https');
 $store   = new PhpSessionStore($secure);
 $session = new Session($store);
 $csrf    = new Csrf($store);
-$view    = new View(dirname(__DIR__) . '/templates');
 $clock   = new SystemClock();
 $pdo     = DB::connect($config);
+$reqLang = is_string($_COOKIE['lang'] ?? null) && \App\Core\Locale::isSupported($_COOKIE['lang'])
+    ? $_COOKIE['lang']
+    : \App\Core\Locale::detect((string) ($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? ''));
+$translator = new \App\I18n\Translator($pdo, $reqLang);
+$view    = new View(dirname(__DIR__) . '/templates', $translator);
 $users   = new UserRepo($pdo, $clock);
 $magic   = new MagicLink($pdo, $users, $clock);
 

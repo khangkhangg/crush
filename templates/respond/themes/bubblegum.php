@@ -1,5 +1,5 @@
 <?php $message = $message ?? null; ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html><html lang="<?= $e($lang ?? 'en') ?>"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title><?= $e($title ?? 'Crush') ?></title>
 <style>
   *{box-sizing:border-box} body{margin:0;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -20,6 +20,7 @@
   .rf-cta{min-height:50px;border:0;border-radius:999px;background:#ff3d8b;color:#fff;font-family:inherit;font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 5px 0 #c81e68;transition:scale .12s} .rf-cta:active{scale:.96;box-shadow:0 2px 0 #c81e68}
 </style></head>
 <body class="theme-bubblegum">
+<?php include __DIR__ . '/../../partials/lang_switcher.php'; ?>
 <?php include __DIR__ . '/../../partials/icons.php'; ?>
 <main class="bg-page">
   <h1 class="bg-title"><?= $e($senderLabel) ?> has a crush on u</h1>

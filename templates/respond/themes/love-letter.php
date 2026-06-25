@@ -1,5 +1,5 @@
 <?php $message = $message ?? null; ?>
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html><html lang="<?= $e($lang ?? 'en') ?>"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title><?= $e($title ?? 'Crush') ?></title>
 <style>
   *{box-sizing:border-box} body{margin:0;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -20,6 +20,7 @@
   .rf-ic{width:16px;height:16px} .rf-place{font-style:italic;color:#a51f37} .rf-cta{min-height:48px;border:0;border-radius:4px;background:#a51f37;color:#fbf3e0;font-family:inherit;font-size:17px;font-style:italic;cursor:pointer;box-shadow:0 4px 0 #6f1224;transition:scale .12s} .rf-cta:active{scale:.96;box-shadow:0 2px 0 #6f1224}
 </style></head>
 <body class="theme-love-letter">
+<?php include __DIR__ . '/../../partials/lang_switcher.php'; ?>
 <?php include __DIR__ . '/../../partials/icons.php'; ?>
 <main class="ll-letter">
   <div class="ll-seal"><svg><use href="#ic-heart"/></svg></div>

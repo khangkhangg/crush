@@ -133,4 +133,8 @@ return static function (
     ));
 
     $router->add('GET', '/avatar/{id}', static fn(string $id): Response => $avatar->show((int) $id));
+
+    $router->add('GET', '/lang/{code}', static fn(string $code): Response => (new \App\I18n\LangController())->set(
+        $code, is_string($_SERVER['HTTP_REFERER'] ?? null) ? parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH) : null
+    ));
 };
