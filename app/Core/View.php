@@ -10,7 +10,10 @@ function e(mixed $value): string
 
 final class View
 {
-    public function __construct(private string $templateDir) {}
+    public function __construct(
+        private string $templateDir,
+        private ?\App\I18n\Translator $translator = null,
+    ) {}
 
     public function render(string $name, array $data = []): string
     {
@@ -18,9 +21,12 @@ final class View
         if (!is_file($path)) {
             throw new \RuntimeException("Template not found: {$name}");
         }
-        $render = static function (string $__path, array $__data): string {
+        $translator = $this->translator;
+        $render = static function (string $__path, array $__data) use ($translator): string {
             // Local alias so templates can call e() unqualified.
             $e = static fn(mixed $v): string => \App\Core\e($v);
+            $t = static fn(string $s): string => $translator !== null ? $translator->t($s) : $s;
+            $lang = $translator !== null ? $translator->lang() : 'en';
             extract($__data, EXTR_SKIP);
             ob_start();
             include $__path;

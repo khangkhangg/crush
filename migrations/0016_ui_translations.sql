@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS ui_translations (
+  id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  lang  VARCHAR(5)   NOT NULL,
+  `key` VARCHAR(191) NOT NULL,
+  value TEXT         NOT NULL,
+  UNIQUE KEY uq_tr_lang_key (lang, `key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
