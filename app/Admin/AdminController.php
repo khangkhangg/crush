@@ -21,6 +21,8 @@ use App\Theme\ThemeRepo;
 
 final class AdminController
 {
+    private ?array $currentAdmin = null;
+
     private const TEMPLATE_PLACEHOLDERS = [
         'welcome' => '{{name}} {{link}}',
         'invite'  => '{{senderLabel}} {{message}} {{link}} {{unsubscribe}}',
@@ -339,22 +341,29 @@ final class AdminController
 
     private function requireAdmin(?int $userId): ?array
     {
+        $this->currentAdmin = null;
         if ($userId === null) {
             return null;
         }
         $user = $this->users->findById($userId);
-        return ($user !== null && (int) $user['is_admin'] === 1) ? $user : null;
+        if ($user !== null && (int) $user['is_admin'] === 1) {
+            $this->currentAdmin = $user;
+            return $user;
+        }
+        return null;
     }
 
     private function forbidden(): Response
     {
-        return Response::html($this->view->render('admin/dashboard', [
-            'title' => 'Forbidden', 'forbidden' => true,
-        ]), 403);
+        return (new Response('', 302))->withHeader('Location', '/admin/login');
     }
 
     private function render(string $tpl, array $data): Response
     {
+        $data += [
+            'adminUser' => $this->currentAdmin,
+            'adminCsrf' => $this->csrf->token(),
+        ];
         return Response::html($this->view->render($tpl, $data));
     }
 }

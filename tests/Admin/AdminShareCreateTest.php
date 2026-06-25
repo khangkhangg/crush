@@ -81,6 +81,8 @@ final class AdminShareCreateTest extends DatabaseTestCase
     public function test_create_requires_admin(): void
     {
         $csrf = new Csrf(new ArrayStore());
-        $this->assertSame(403, $this->controller($csrf)->createShare(null, [], $csrf->token())->status());
+        $res = $this->controller($csrf)->createShare(null, [], $csrf->token());
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/admin/login', $res->headers()['Location']);
     }
 }

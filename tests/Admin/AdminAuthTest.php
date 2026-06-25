@@ -44,14 +44,18 @@ final class AdminAuthTest extends DatabaseTestCase
 
     public function test_logged_out_is_forbidden(): void
     {
-        $this->assertSame(403, $this->controller()->dashboard(null)->status());
+        $res = $this->controller()->dashboard(null);
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/admin/login', $res->headers()['Location']);
     }
 
     public function test_non_admin_is_forbidden(): void
     {
         $user = (new UserRepo($this->pdo(), new FrozenClock(new \DateTimeImmutable('2026-01-01T00:00:00Z'))))
             ->create('plain@x.test', 'Plain', 'magic');
-        $this->assertSame(403, $this->controller()->dashboard($user['id'])->status());
+        $res = $this->controller()->dashboard($user['id']);
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/admin/login', $res->headers()['Location']);
     }
 
     public function test_admin_sees_dashboard(): void

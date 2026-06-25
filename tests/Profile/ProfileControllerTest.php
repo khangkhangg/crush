@@ -77,4 +77,40 @@ final class ProfileControllerTest extends DatabaseTestCase
         $reloaded = (new UserRepo($this->pdo(), $this->clock))->findById($id);
         $this->assertSame(Avatars::default(), $reloaded['avatar_key']);
     }
+
+    public function test_password_page_redirects_when_logged_out(): void
+    {
+        $res = $this->controller(new Csrf(new ArrayStore()))->editPassword(null);
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/login', $res->headers()['Location']);
+    }
+
+    public function test_save_password_updates_hash(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $ctrl = $this->controller($csrf);
+        $id = $this->user();
+
+        $res = $ctrl->savePassword($id, [
+            'password' => 'newpass1',
+            'password_confirm' => 'newpass1',
+        ], $csrf->token());
+
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/profile', $res->headers()['Location']);
+        $reloaded = (new UserRepo($this->pdo(), $this->clock))->findById($id);
+        $this->assertTrue(password_verify('newpass1', (string) $reloaded['password_hash']));
+    }
+
+    public function test_save_password_rejects_mismatch(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $res = $this->controller($csrf)->savePassword($this->user(), [
+            'password' => 'newpass1',
+            'password_confirm' => 'different',
+        ], $csrf->token());
+
+        $this->assertSame(422, $res->status());
+        $this->assertStringContainsString('Passwords do not match.', $res->body());
+    }
 }

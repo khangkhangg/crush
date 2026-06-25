@@ -52,6 +52,11 @@ final class CuisineChipsTest extends DatabaseTestCase
     public function test_form_has_cuisine_chips_and_other(): void
     {
         $body = $this->controller(new Csrf(new ArrayStore()))->showNew($this->uid())->body();
+        $this->assertStringContainsString('value="hotel"', $body);
+        $this->assertStringContainsString('data-cuisine-controls', $body);
+        $this->assertStringContainsString('add.hidden = hotel', $body);
+        $this->assertStringContainsString('if (i > 0) opt.remove()', $body);
+        $this->assertStringContainsString('btn.hidden = hotel', $body);
         $this->assertStringContainsString('class="chips"', $body);
         $this->assertStringContainsString('value="Italian"', $body);
         $this->assertStringContainsString('value="__other__"', $body);
@@ -80,5 +85,19 @@ final class CuisineChipsTest extends DatabaseTestCase
         ], $csrf->token());
         $inv = (new InviteRepo($this->pdo(), $this->clock))->listBySender($uid)[0];
         $this->assertSame('Fusion', (new InvitePlaceRepo($this->pdo()))->groupedForInvite((int) $inv['id'])['dinner'][0]['cuisine']);
+    }
+
+    public function test_hotel_vibe_ignores_cuisine(): void
+    {
+        $csrf = new Csrf(new ArrayStore());
+        $uid = $this->uid('hotel@x.test');
+        $this->controller($csrf)->create($uid, [
+            'crush_email' => 'c@x.test', 'date_mode' => 'instant', 'place_mode' => 'focused', 'focus_vibe' => 'hotel',
+            'opts' => [['name' => 'The Cute Hotel', 'cuisine' => 'Italian', 'cuisine_custom' => 'Fusion', 'url' => '']],
+        ], $csrf->token());
+        $inv = (new InviteRepo($this->pdo(), $this->clock))->listBySender($uid)[0];
+        $hotel = (new InvitePlaceRepo($this->pdo()))->groupedForInvite((int) $inv['id'])['hotel'][0];
+        $this->assertSame('The Cute Hotel', $hotel['place_name']);
+        $this->assertNull($hotel['cuisine']);
     }
 }

@@ -1,10 +1,11 @@
 <?php /* templates/admin/languages.php */ $languages = $languages ?? []; $flash = $flash ?? null; ?>
 <?php $content = function () use ($e, $languages, $flash) { ob_start(); ?>
-  <div class="panel"><h1>Languages</h1>
+  <div class="panel" data-admin-page="languages"><p class="admin-kicker">Copy system</p><h1>Languages</h1>
+  <p>Manage translated UI copy for Crush. Keep tone clear, local, and consistent.</p>
   <?php if ($flash): ?><div class="flash"><?= $e($flash) ?></div><?php endif; ?>
-  <ul style="list-style:none;padding:0;">
+  <ul class="admin-list">
     <?php foreach ($languages as $code => $name): ?>
-      <li style="padding:6px 0;"><a href="/admin/languages/edit?lang=<?= $e($code) ?>"><?= $e($name) ?> (<?= $e($code) ?>)</a></li>
+      <li><a href="/admin/languages/edit?lang=<?= $e($code) ?>"><?= $e($name) ?><small><?= $e($code) ?></small></a></li>
     <?php endforeach; ?>
   </ul></div>
 <?php return ob_get_clean(); };

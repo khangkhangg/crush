@@ -2,15 +2,21 @@
 <?php $content = function () use ($e, $t, $state, $invite, $response, $chosenPlace, $user, $avatars, $csrf, $returnTo) {
   $crush = $invite['crush_name'] ?? ($invite['crush_email'] ?? 'your crush');
   ob_start();
+  ?>
+  <style>
+    .reveal-hero{border-radius:26px;padding:18px;background:linear-gradient(150deg,#fff7fb,#f4ecff);box-shadow:0 12px 28px rgba(90,42,82,.1);margin-bottom:16px}
+    .reveal-list{list-style:none;padding:0;margin:14px 0;display:grid;gap:10px}.reveal-list li{border-radius:16px;background:#fff;padding:10px 12px;box-shadow:0 8px 20px rgba(90,42,82,.08)}
+    .iv-timeline{list-style:none;padding:0;margin:14px 0;display:flex;gap:6px}.iv-timeline li{flex:1;text-align:center;font-size:11px}.iv-timeline div{height:7px;border-radius:999px;margin-bottom:5px}
+    .reveal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.reveal-actions .btn{box-shadow:none}
+  </style>
+  <?php
   if ($state === 'missing'): ?>
-    <h1><?= $e($t('Not found')) ?></h1><p class="subtitle"><?= $e($t('We couldn\'t find that invite.')) ?></p>
+    <div class="reveal-hero" data-redesign-page="reveal"><img class="generated-art generated-art--small generated-art--center" src="/assets/generated/invite-envelope.png" alt="" loading="lazy" decoding="async"><p class="eyebrow">Crush</p><h1 class="title"><?= $e($t('Not found')) ?></h1><p class="copy"><?= $e($t('We couldn\'t find that invite.')) ?></p></div>
   <?php elseif ($state === 'waiting'): ?>
-    <h1 style="text-wrap:balance;"><?= $e($t('Waiting on')) ?> <?= $e($crush) ?></h1>
-    <p style="opacity:.85;"><?= $e($t('No response yet. We\'ll let you know the moment they answer.')) ?></p>
+    <div class="reveal-hero" data-redesign-page="reveal"><img class="generated-art generated-art--small generated-art--center" src="/assets/generated/invite-envelope.png" alt="" loading="lazy" decoding="async"><p class="eyebrow"><?= $e($t('Waiting')) ?></p><h1 class="title"><?= $e($t('Waiting on')) ?> <?= $e($crush) ?></h1><p class="copy"><?= $e($t('No response yet. We\'ll let you know the moment they answer.')) ?></p></div>
   <?php elseif ($state === 'locked'): ?>
     <?php include __DIR__ . '/../partials/avatars.php'; ?>
-    <h1 style="text-wrap:balance;"><?= $e($crush) ?> <?= $e($t('answered!')) ?></h1>
-    <p style="opacity:.85;"><?= $e($t('Add a few cute details so they know it\'s really you — then you\'ll see what they picked.')) ?></p>
+    <div class="reveal-hero" data-redesign-page="reveal"><img class="generated-art generated-art--small generated-art--center" src="/assets/generated/sent-heart.png" alt="" loading="lazy" decoding="async"><p class="eyebrow"><?= $e($t('Answered')) ?></p><h1 class="title"><?= $e($crush) ?> <?= $e($t('answered!')) ?></h1><p class="copy"><?= $e($t('Add a few cute details so they know it\'s really you — then you\'ll see what they picked.')) ?></p></div>
     <?php include __DIR__ . '/../profile/_form.php'; ?>
   <?php else: /* reveal */
     $anon = (int) ($invite['is_anonymous'] ?? 0) === 1;
@@ -19,15 +25,15 @@
     $steps = [['Sent', $invite['created_at'] ?? null, true],
               ['Answered', $response['created_at'] ?? null, true],
               ['Confirmed', null, in_array($invite['status'] ?? '', ['confirmed', 'closed'], true)]]; ?>
-    <h1 style="text-wrap:balance;"><?= $e($t('It\'s a date with')) ?> <?= $e($crush) ?></h1>
-    <p style="opacity:.8;font-size:13px;margin-top:-4px;">
+    <div class="reveal-hero" data-redesign-page="reveal"><img class="generated-art generated-art--small generated-art--center" src="/assets/generated/sent-heart.png" alt="" loading="lazy" decoding="async"><p class="eyebrow"><?= $e($t('Answered')) ?></p><h1 class="title"><?= $e($t('It\'s a date with')) ?> <?= $e($crush) ?></h1>
+    <p class="copy" style="font-size:13px;margin:0;">
       <?= $anon ? $e($t('You sent this anonymously.')) : $e($t('Sent as yourself.')) ?>
       <?= $e($invite['crush_email'] ?? '') ?>
-    </p>
-    <ol class="iv-timeline" style="list-style:none;padding:0;margin:14px 0;display:flex;gap:6px;">
+    </p></div>
+    <ol class="iv-timeline">
       <?php foreach ($steps as [$lbl, $ts, $done]): ?>
-        <li style="flex:1;text-align:center;font-size:11px;<?= $done ? 'color:#16a34a;font-weight:700;' : 'opacity:.4;' ?>">
-          <div style="height:6px;border-radius:3px;background:<?= $done ? '#16a34a' : '#e7d4ff' ?>;margin-bottom:4px;"></div>
+        <li style="<?= $done ? 'color:#16a34a;font-weight:700;' : 'opacity:.4;' ?>">
+          <div style="background:<?= $done ? '#16a34a' : '#e7d4ff' ?>;"></div>
           <?= $e($t($lbl)) ?>
         </li>
       <?php endforeach; ?>
@@ -43,7 +49,7 @@
         <?php endif; ?>
       </p>
     <?php endif; ?>
-    <ul style="list-style:none;padding:0;line-height:1.8;">
+    <ul class="reveal-list">
       <li><strong><?= $e($t('When')) ?>:</strong> <?= $e($response['chosen_start'] ?? '') ?></li>
       <?php if (!empty($response['meal_choice'])): ?><li><strong><?= $e($t('Craving')) ?>:</strong> <?= $e($t($response['meal_choice'])) ?></li><?php endif; ?>
       <?php if (!empty($response['meal_wish'])): ?><li><strong><?= $e($t('Wish')) ?>:</strong> <?= $e($response['meal_wish']) ?></li><?php endif; ?>
@@ -56,10 +62,9 @@
         </li>
       <?php endif; ?>
     </ul>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-      <a href="/invites/<?= $e($invite['public_token']) ?>/calendar" style="padding:12px 18px;border-radius:14px;background:#ff3d8b;color:#fff;font-weight:700;text-decoration:none;"><?= $e($t('Download calendar invite')) ?></a>
-      <button type="button" class="iv-reshare" data-token="<?= $e($invite['public_token']) ?>"
-              style="padding:12px 18px;border-radius:14px;border:1px solid #e7d4ff;background:#fff;color:#5a2a52;font-weight:600;cursor:pointer;"><?= $e($t('Copy link')) ?></button>
+    <div class="reveal-actions">
+      <a href="/invites/<?= $e($invite['public_token']) ?>/calendar" class="btn"><?= $e($t('Download calendar invite')) ?></a>
+      <button type="button" class="iv-reshare btn btn--ghost" data-token="<?= $e($invite['public_token']) ?>"><?= $e($t('Copy link')) ?></button>
     </div>
     <script>
     document.querySelectorAll('.iv-reshare').forEach(function(b){

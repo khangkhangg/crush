@@ -70,4 +70,36 @@ final class ProfileController
         $dest = (str_starts_with($returnTo, '/') && !str_starts_with($returnTo, '//')) ? $returnTo : '/';
         return (new Response('', 302))->withHeader('Location', $dest);
     }
+
+    public function editPassword(?int $userId, ?string $error = null): Response
+    {
+        if ($userId === null) {
+            return (new Response('', 302))->withHeader('Location', '/login');
+        }
+        return Response::html($this->view->render('profile/password', [
+            'title' => 'Reset password',
+            'csrf' => $this->csrf->token(),
+            'error' => $error,
+        ]));
+    }
+
+    public function savePassword(?int $userId, array $input, string $csrf): Response
+    {
+        if ($userId === null) {
+            return (new Response('', 302))->withHeader('Location', '/login');
+        }
+        if (!$this->csrf->validate($csrf)) {
+            return $this->editPassword($userId, 'Your session expired. Please try again.')->withStatus(400);
+        }
+        $password = (string) ($input['password'] ?? '');
+        $confirm = (string) ($input['password_confirm'] ?? '');
+        if (strlen($password) < 6) {
+            return $this->editPassword($userId, 'Use at least 6 characters.')->withStatus(422);
+        }
+        if ($password !== $confirm) {
+            return $this->editPassword($userId, 'Passwords do not match.')->withStatus(422);
+        }
+        $this->users->setPasswordHash($userId, password_hash($password, PASSWORD_DEFAULT));
+        return (new Response('', 302))->withHeader('Location', '/profile');
+    }
 }

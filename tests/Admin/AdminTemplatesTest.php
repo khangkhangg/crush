@@ -50,7 +50,9 @@ final class AdminTemplatesTest extends DatabaseTestCase
 
     public function test_templates_list_requires_admin(): void
     {
-        $this->assertSame(403, $this->controller(new Csrf(new ArrayStore()))->templates(null)->status());
+        $res = $this->controller(new Csrf(new ArrayStore()))->templates(null);
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/admin/login', $res->headers()['Location']);
     }
 
     public function test_templates_list_renders(): void

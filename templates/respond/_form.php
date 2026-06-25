@@ -43,7 +43,7 @@
   </div>
 <?php else: ?>
   <fieldset class="rf-meals">
-    <legend><?= $e($t('What are you craving?')) ?></legend>
+    <legend><?= $e($t('Pick a vibe')) ?></legend>
     <div class="rf-chips">
       <?php foreach ($meals as $m): $p = $places[$m['key']] ?? null;
             $plabel = $p ? ($p['place_resolved_name'] ?: $p['place_name']) : '';
@@ -77,6 +77,11 @@
   </div>
 </div>
 <style>
+  .rf-form{position:relative}.rf-form:before{content:"";display:block;width:100%;height:8px;border-radius:999px;background:linear-gradient(90deg,#ff3d8b 35%,#e7d4ff 35%);margin:0 0 8px}
+  .rf-tod-b{min-height:44px;border:1px solid rgba(255,61,139,.24);border-radius:999px;background:#fff;color:inherit;font-weight:800;padding:8px 14px;cursor:pointer;transition:transform .15s,box-shadow .15s}.rf-tod-b:active{scale:.96}.rf-tod-b[data-on]{background:#ff3d8b;color:#fff;box-shadow:0 8px 18px rgba(255,61,139,.22)}
+  .rf-field input{outline:none;transition:border-color .15s,box-shadow .15s,transform .15s}.rf-field input:focus-visible{border-color:#ff8fc0!important;box-shadow:0 0 0 4px rgba(255,143,192,.18);transform:translateY(-1px)}
+  .rf-collapsed{border-radius:18px;padding:12px 14px;background:rgba(255,255,255,.7);box-shadow:0 10px 24px rgba(90,42,82,.08);display:flex;gap:8px;flex-wrap:wrap}
+  .rf-cta{width:100%}
   .rf-map-modal { position:fixed; inset:0; background:rgba(40,20,50,.4); display:none; z-index:60; }
   .rf-map-modal.show { display:block; }
   .rf-map-card { position:absolute; background:#fff; box-shadow:0 20px 50px rgba(0,0,0,.3); }
@@ -90,6 +95,7 @@
     .rf-map-card { left:auto; right:0; top:0; transform:translateX(100%); width:min(46vw,520px); height:100%; border-radius:18px 0 0 18px; transition:transform .3s ease; }
     .rf-map-modal.show .rf-map-card { transform:translateX(0); }
   }
+  @media (max-width:520px){ .rf-cta{width:calc(100% - 58px)} }
   @media (prefers-reduced-motion: reduce) { .rf-map-card { transition:none; } }
 </style>
 <script>

@@ -50,7 +50,9 @@ final class AdminLanguagesTest extends DatabaseTestCase
 
     public function test_list_requires_admin(): void
     {
-        $this->assertSame(403, $this->controller(new Csrf(new ArrayStore()))->languages(null)->status());
+        $res = $this->controller(new Csrf(new ArrayStore()))->languages(null);
+        $this->assertSame(302, $res->status());
+        $this->assertSame('/admin/login', $res->headers()['Location']);
     }
 
     public function test_list_shows_languages(): void

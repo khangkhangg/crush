@@ -12,6 +12,7 @@ final class MealOptions
         ['key' => 'dinner',  'label' => 'Dinner',  'icon' => 'ic-utensils'],
         ['key' => 'dessert', 'label' => 'Dessert', 'icon' => 'ic-heart'],
         ['key' => 'drinks',  'label' => 'Drinks',  'icon' => 'ic-wine'],
+        ['key' => 'hotel',   'label' => 'Hotel',   'icon' => 'ic-hotel'],
     ];
 
     /** @return string[] */

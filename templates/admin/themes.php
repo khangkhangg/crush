@@ -1,10 +1,13 @@
 <?php $themes = $themes ?? []; ?>
 <?php $content = function () use ($e, $themes, $csrf) {
   ob_start(); ?>
-  <div class="panel">
+  <div class="panel" data-admin-page="themes">
+    <p class="admin-kicker">Experiments</p>
     <h1>Themes &amp; A/B funnel</h1>
+    <p>Review recipient invite theme performance and control which experiences are active.</p>
     <form method="post" action="/admin/themes">
       <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
+      <div class="table-wrap">
       <table>
         <tr><th>Theme</th><th>Opened</th><th>Completed</th><th>Rate</th><th>Weight</th><th>Active</th></tr>
         <?php foreach ($themes as $t): ?>
@@ -18,7 +21,8 @@
           </tr>
         <?php endforeach; ?>
       </table>
-      <button type="submit">Save themes</button>
+      </div>
+      <div class="admin-actions"><button type="submit">Save themes</button></div>
     </form>
   </div>
   <?php return (string) ob_get_clean(); };

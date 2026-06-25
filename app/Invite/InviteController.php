@@ -121,11 +121,14 @@ final class InviteController
                         continue;
                     }
                     $url = trim((string) ($opt['url'] ?? ''));
-                    $cuisine = trim((string) ($opt['cuisine'] ?? ''));
-                    if ($cuisine === '__other__') {
-                        $cuisine = trim((string) ($opt['cuisine_custom'] ?? ''));
+                    $cuisine = null;
+                    if ($vibe !== 'hotel') {
+                        $cuisine = trim((string) ($opt['cuisine'] ?? ''));
+                        if ($cuisine === '__other__') {
+                            $cuisine = trim((string) ($opt['cuisine_custom'] ?? ''));
+                        }
+                        $cuisine = $cuisine !== '' ? $cuisine : null;
                     }
-                    $cuisine = $cuisine !== '' ? $cuisine : null;
                     $resolved = $url !== '' ? $this->maps->resolve($url) : ['name' => null, 'address' => null, 'clean_url' => null];
                     $this->places->addOption(
                         (int) $invite['id'], $vibe, $name, $url !== '' ? $url : null,

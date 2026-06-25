@@ -96,6 +96,7 @@ return static function (
     ));
 
     $router->add('GET',  '/admin',               static fn(): Response => $admin->dashboard($currentUserId()));
+    $router->add('GET',  '/admin/',              static fn(): Response => $admin->dashboard($currentUserId()));
     $router->add('GET',  '/admin/settings',      static fn(): Response => $admin->settings($currentUserId()));
     $router->add('POST', '/admin/settings',      static fn(): Response => $admin->saveSettings($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
     $router->add('POST', '/admin/settings/test', static fn(): Response => $admin->sendTest($currentUserId(), (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
@@ -135,6 +136,8 @@ return static function (
 
     $router->add('GET',  '/profile', static fn(): Response => $profile->edit($currentUserId()));
     $router->add('POST', '/profile', static fn(): Response => $profile->save($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
+    $router->add('GET',  '/profile/password', static fn(): Response => $profile->editPassword($currentUserId()));
+    $router->add('POST', '/profile/password', static fn(): Response => $profile->savePassword($currentUserId(), $_POST, (static fn($v) => is_string($v) ? $v : '')($_POST['csrf'] ?? '')));
 
     $router->add('GET', '/invites/{token}/response', static fn(string $token): Response => $reveal->show($currentUserId(), $token));
     $router->add('GET', '/invites/{token}/calendar', static fn(string $token): Response => $reveal->downloadIcs($currentUserId(), $token));
