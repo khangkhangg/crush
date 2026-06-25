@@ -11,7 +11,7 @@ final class SenderFlowI18nTest extends DatabaseTestCase
 {
     private function viewVi(): View
     {
-        $ins = $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?)');
+        $ins = $this->pdo()->prepare('INSERT INTO ui_translations (lang, `key`, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)');
         $ins->execute(['vi', 'Your invites', 'Lời mời của bạn']);
         $ins->execute(['vi', 'Your invite is ready', 'Lời mời của bạn đã sẵn sàng']);
         return new View(\dirname(__DIR__, 2) . '/templates', new Translator($this->pdo(), 'vi'));
